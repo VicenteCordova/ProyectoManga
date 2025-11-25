@@ -1,0 +1,202 @@
+{% load static %}
+<!doctype html>
+<html lang="es" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MangaVerse Store{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% static 'images/sinfondo.png' %}">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- CSS del proyecto -->
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Fondo desde /static/fondo.html -->
+  <div class="bg-layer">
+    <iframe class="bg-iframe" src="{% static 'fondo.html' %}" title="Fondo MangaVerse" loading="lazy"></iframe>
+  </div>
+  <div class="bg-overlay"></div>
+
+  <div class="page-wrap">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent border-bottom border-light-subtle">
+      <div class="container">
+        <!-- HOME -->
+        <a class="navbar-brand fw-bold" href="{% url 'catalogo:home' %}">MangaVerse</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mvNavbar"
+                aria-controls="mvNavbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mvNavbar">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="{% url 'catalogo:lista-mangas' %}">Catálogo</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'catalogo:nosotros' %}">Nosotros</a></li>
+          </ul>
+
+          <!-- Buscador funcional con autocompletado  -->
+          <form class="d-none d-lg-flex position-relative" role="search"
+                method="get" action="{% url 'catalogo:search' %}"
+                id="navbar-search-form" autocomplete="off"
+                data-placeholder-cover="{% static 'images/sinfondo.png' %}">
+            <input class="form-control me-2" type="search" name="q" id="navbar-search-input"
+                   placeholder="Buscar…" aria-label="Buscar"
+                   value="{{ request.GET.q|default:'' }}" autocomplete="off">
+            <button class="btn btn-outline-warning border border-2 border-light text-white" type="submit">Buscar</button>
+
+            <!-- Contenedor de resultados en vivo -->
+            <div id="live-results"
+                 class="list-group position-absolute w-100 shadow"
+                 style="top:100%; left:0; z-index:1050; display:none; max-height:60vh; overflow:auto;">
+              <!-- Items generados por JS -->
+            </div>
+          </form>
+
+          <!-- Auth -->
+          <ul class="navbar-nav ms-lg-3">
+            {% if user.is_authenticated %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile' %}">Mi cuenta</a></li>
+              <li class="nav-item">
+                <form action="{% url 'accounts:logout' %}" method="post" class="nav-link m-0 p-0 d-inline">
+                  {% csrf_token %}
+                  <button class="nav-link" type="submit">Salir</button>
+                </form>
+              </li>
+            {% else %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Ingresar</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'accounts:register' %}">Registro</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mensajes -->
+    {% if messages %}
+      <div class="container mt-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Contenido -->
+    <main class="flex-fill py-4">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-top border-light-subtle py-4 mt-auto">
+      <div class="container text-center medium">© -MangaVerse-2025</div>
+    </footer>
+  </div>
+
+  <!-- Bootstrap Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+
+  {% block extra_js %}
+  <script>
+  (function(){
+    "use strict";
+
+    /* Utilidades */
+    function debounce(fn, delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),delay); }; }
+    function esc(s){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+    const form    = document.getElementById('navbar-search-form');
+    const input   = document.getElementById('navbar-search-input');
+    const results = document.getElementById('live-results');
+    const phCover = form?.dataset.placeholderCover || '';
+    let activeIdx = -1, itemsCache = [];
+    const MINLEN  = 2;
+
+    function hideBox(){ results.style.display='none'; results.innerHTML=''; activeIdx=-1; itemsCache=[]; }
+    function showBox(){ results.style.display='block'; }
+
+    function setActive(idx){
+      const links = results.querySelectorAll('.list-group-item');
+      links.forEach(l=>l.classList.remove('active'));
+      if(idx>=0 && links[idx]){ links[idx].classList.add('active'); activeIdx=idx; } else { activeIdx=-1; }
+    }
+
+    function renderLoading(){
+      results.innerHTML = '<div class="list-group-item"><span class="spinner-border spinner-border-sm me-2"></span>Buscando…</div>';
+      showBox();
+    }
+
+    function renderItems(items){
+      results.innerHTML=''; activeIdx=-1; itemsCache = items;
+      if(!items || !items.length){
+        results.innerHTML = '<div class="list-group-item text-muted">Sin resultados</div>';
+        showBox(); return;
+      }
+
+      items.forEach((it, idx)=>{
+        const cover = it.cover || phCover;
+        const a = document.createElement('a');
+        a.href = it.url;
+        a.className = 'list-group-item list-group-item-action';
+        a.setAttribute('data-idx', idx);
+        a.innerHTML = `
+          <div class="d-flex align-items-start">
+            ${cover ? `<img src="${cover}" alt="" class="rounded me-2 flex-shrink-0" width="44" height="44" style="object-fit:cover;">` : ''}
+            <div class="flex-grow-1">
+              <div class="fw-semibold mb-1">${esc(it.title)}</div>
+              ${it.author ? `<div class="small text-muted">Autor: ${esc(it.author)}</div>` : ''}
+              ${it.snippet ? `<small class="text-muted d-block mt-1">${esc(it.snippet)}</small>` : ''}
+            </div>
+          </div>`;
+        a.addEventListener('mousemove', ()=>setActive(idx));
+        results.appendChild(a);
+      });
+      showBox();
+    }
+
+    function handleKey(e){
+      const links = results.querySelectorAll('.list-group-item');
+      const open  = results.style.display !== 'none';
+      if(e.key==='ArrowDown' && open){ e.preventDefault(); setActive((activeIdx+1)%links.length); }
+      else if(e.key==='ArrowUp' && open){ e.preventDefault(); setActive((activeIdx-1+links.length)%links.length); }
+      else if(e.key==='Enter'){
+        if(open && activeIdx>=0 && itemsCache[activeIdx]){ e.preventDefault(); window.location.href = itemsCache[activeIdx].url; }
+      } else if(e.key==='Escape'){ hideBox(); }
+    }
+
+    document.addEventListener('click', (ev)=>{ if(!form.contains(ev.target)) hideBox(); });
+
+    const fetchSuggest = debounce(async (q)=>{
+      q = (q||'').trim();
+      if(q.length < MINLEN){ hideBox(); return; }
+      try{
+        renderLoading();
+        const url = `{% url 'catalogo:search-suggest' %}?q=` + encodeURIComponent(q);
+        const res = await fetch(url, { headers:{ 'X-Requested-With':'XMLHttpRequest' }});
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const data = await res.json();
+        renderItems(data.results || []);
+      }catch(err){
+        console.error('Suggest error', err);
+        results.innerHTML = '<div class="list-group-item text-danger">Error cargando sugerencias</div>';
+        showBox();
+      }
+    }, 180);
+
+    input && input.addEventListener('input', e=>fetchSuggest(e.target.value));
+    input && input.addEventListener('keydown', handleKey);
+  })();
+  </script>
+  {% endblock %}
+</body>
+</html>

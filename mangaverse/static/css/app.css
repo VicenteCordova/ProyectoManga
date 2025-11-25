@@ -1,0 +1,55 @@
+/* Tipografía base */
+:root { --brand-orange: #fd7e14; }
+body { font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif; }
+
+/* Espacio para navbar fija (evita padding inline en templates) */
+.pt-nav { padding-top: 80px; }
+
+/* Marca de la navbar */
+.brand-mark { color:#fff; text-decoration:none; }
+.brand-title { font-weight:700; letter-spacing:0.5px; }
+.brand-subtitle { font-weight:700; line-height:1; }
+.brand-store { display:block; font-weight:600; border-top:1px solid rgba(255,255,255,.7); margin-top:2px; padding-top:2px; }
+
+/* Links navbar */
+.navbar .nav-link { color:#cccccc; }
+.navbar .nav-link:hover,
+.navbar .nav-link.active { color:#fff; }
+
+/* Botón CTA */
+.btn-warning { border:none; }
+
+/* ---------- HERO opcional ---------- */
+.hero {
+  position: relative;
+  min-height: 60vh;
+  display: grid;
+  align-items: center;
+  color: #fff;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: blur(2px); transform: scale(1.05);
+  z-index: -2;
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,.45) 45%, rgba(0,0,0,0) 80%);
+  z-index: -1;
+}
+.hero .hero-character {
+  max-height: 60vh; object-fit: contain; display: block; margin-left: auto;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.3));
+}
+.hero .btn-cta {
+  background: var(--brand-orange); color:#fff; font-weight:700; padding:.8rem 1.6rem;
+}
+.hero .btn-cta:hover { filter: brightness(.95); }
+
+/* Cards catálogo */
+.card-img-top { height: 220px; object-fit:contain; }
+
+/* Tablas */
+.table td, .table th { vertical-align: middle; }

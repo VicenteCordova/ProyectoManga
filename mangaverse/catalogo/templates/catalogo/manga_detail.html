@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ manga.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-4">
+      {% if manga.portada %}
+        <img src="{{ manga.portada.url }}" alt="Portada de {{ manga.titulo }}" class="img-fluid rounded">
+      {% else %}
+        <img src="{% static 'images/sinfondo.png' %}" alt="Sin portada" class="img-fluid rounded">
+      {% endif %}
+    </div>
+
+    <div class="col-md-8">
+      <div class="d-flex align-items-start justify-content-between gap-2">
+        <h1 class="mb-2">{{ manga.titulo }}</h1>
+
+        <!-- Acciones protegidas -->
+        {% if request.user.is_authenticated %}
+          <div class="d-flex gap-2">
+            {% if perms.catalogo.change_manga %}
+              <a class="btn btn-outline-primary btn-sm"
+                 href="{% url 'catalogo:manga-update' manga_slug=manga.slug %}">
+                Editar
+              </a>
+            {% endif %}
+            {% if perms.catalogo.delete_manga %}
+              <a class="btn btn-outline-danger btn-sm"
+                 href="{% url 'catalogo:manga-delete' manga_slug=manga.slug %}">
+                Eliminar
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+        <!-- /Acciones protegidas -->
+      </div>
+
+      <p><strong>Autor:</strong> {{ manga.autor }}</p>
+      <p><strong>Descripción:</strong> {{ manga.descripcion|linebreaks }}</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <h2>Capítulos Disponibles</h2>
+{% if chapters %}
+  <ul class="list-group">
+    {% for chapter in chapters %}
+      <li class="list-group-item bg-dark text-white border-secondary">
+        <a href="{% url 'catalogo:chapter-detail' manga_slug=manga.slug chapter_slug=chapter.slug %}"
+           class="d-block text-white text-decoration-none link-underline-opacity-0 link-underline-opacity-0-hover">
+          {{ chapter.title }} (Capítulo {{ chapter.chapter_number }})
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Aún no hay capítulos disponibles para este manga.</p>
+{% endif %}
+
+</div>
+{% endblock %}

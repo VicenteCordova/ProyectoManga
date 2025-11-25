@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio — MangaVerse{% endblock %}
+
+{% block content %}
+<section class="section-hero text-center">
+  <h1>¡Bienvenido a MangaVerse!</h1>
+
+  <!-- Logo centrado entre el título y el subtítulo -->
+  <img
+    src="{% static 'images/sinfondo.png' %}"
+    alt="Logo MangaVerse"
+    width="300" height="300"
+    class="d-block mx-auto my-3 img-fluid opacity-75"
+    loading="lazy"
+  >
+
+  <p class="lead text-faint">
+    Tu portal definitivo para encontrar las mejores historias.
+  </p>
+
+  <div class="mt-3">
+    <a class="btn btn-outline-warning btn-lg border border-2 border-light text-white"
+       href="{% url 'catalogo:lista-mangas' %}">
+      Ver Catálogo
+    </a>
+  </div>
+</section>
+
+<section class="py-4">
+  <div class="row g-3">
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card soft h-100">
+        <div class="card-body">
+          <h5 class="card-title text-light">Novedades</h5>
+          <p class="card-text text-light">Últimos lanzamientos y volúmenes recién llegados.</p>
+          <a class="btn btn-outline-warning border border-2 border-light text-white">Explorar</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card soft h-100">
+        <div class="card-body">
+          <h5 class="card-title text-light">Lo más visto</h5>
+          <p class="card-text text-light">Las colecciones destacadas de nuestra comunidad.</p>
+          <a class="btn btn-outline-warning border border-2 border-light text-white">Ver más</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card soft h-100">
+        <div class="card-body">
+          <h5 class="card-title text-light">Mi colección</h5>
+          <p class="card-text text-light">Tus mangas favoritos en un solo lugar</p>
+          <a class="btn btn-outline-warning border border-2 border-light text-white">Ver</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

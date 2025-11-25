@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Crear cuenta | Mangaverse{% endblock %}
+
+{# --- Estilos locales para este formulario --- #}
+{% block extra_head %}
+<style>
+  /* Títulos/labels del formulario en blanco dentro de la tarjeta */
+  .auth-card .form-label { 
+    color: #fff !important; 
+    font-weight: 500; 
+    letter-spacing: .3px;
+  }
+  /* Encabezado dentro de la tarjeta  */
+  .auth-card .card-body h1,
+  .auth-card .card-body .h4,
+  .auth-card .card-body h4 {
+    color: #fff;
+  }
+  /* Mejora de lectura general dentro de la tarjeta */
+  .auth-card { color: #f8f9fa; }
+  /* Placeholder más claro */
+  .auth-input input::placeholder { color: rgba(255,255,255,.6); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-section d-flex align-items-center">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xxl-4">
+
+        <!-- Tarjeta tipo “glass” para registro -->
+        <div class="card auth-card border-0 shadow-lg">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Branding -->
+            <div class="text-center mb-4">
+              <img src="{% static 'images/sinfondo.png' %}" class="auth-logo mb-2" alt="Mangaverse" width="100" height="100">
+              <h1 class="h4 m-0 fw-bold brand-gradient-text">Crear cuenta</h1>
+            </div>
+
+            <!-- Formulario -->
+            <form method="post" novalidate class="auth-form">
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+              <div class="alert alert-danger py-2 px-3 mb-3">
+                {{ form.non_field_errors }}
+              </div>
+              {% endif %}
+
+              <!-- Usuario -->
+              <div class="mb-3">
+                <label class="form-label" for="{{ form.username.id_for_label }}">Usuario</label>
+                <div class="input-group input-group-lg auth-input">
+                  <span class="input-group-text" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-person 0"  viewBox="0 0 16 16">
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/><path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4"/>
+                    </svg>
+                  </span>
+                  {{ form.username }}
+                </div>
+                {{ form.username.errors }}
+              </div>
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+                <div class="input-group input-group-lg auth-input">
+                  <span class="input-group-text" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+                      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v.217l-8 4.8-8-4.8V4z"/><path d="M0 6.383l7.555 4.533a.5.5 0 0 0 .89 0L16 6.383V12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2z"/>
+                    </svg>
+                  </span>
+                  {{ form.email }}
+                </div>
+                {{ form.email.errors }}
+              </div>
+
+              <!-- Password -->
+              <div class="mb-3">
+                <label class="form-label" for="{{ form.password1.id_for_label }}">Contraseña</label>
+                <div class="input-group input-group-lg auth-input">
+                  <span class="input-group-text" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                      <path d="M8 1a3 3 0 0 0-3 3v2H4a2 2 0 0 0-2 2v4.5A1.5 1.5 0 0 0 3.5 14h9A1.5 1.5 0 0 0 14 12.5V8a2 2 0 0 0-2-2h-1V4a3 3 0 0 0-3-3zM6 6V4a2 2 0 1 1 4 0v2z"/>
+                    </svg>
+                  </span>
+                  {{ form.password1 }}
+                </div>
+                {{ form.password1.errors }}
+              </div>
+
+              <!-- Password (confirmación) -->
+              <div class="mb-2">
+                <label class="form-label" for="{{ form.password2.id_for_label }}">Repetir contraseña</label>
+                <div class="input-group input-group-lg auth-input">
+                  <span class="input-group-text" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-shield-lock" viewBox="0 0 16 16">
+                      <path d="M5.5 8a2.5 2.5 0 1 1 5 0v1h.5A1.5 1.5 0 0 1 12.5 10.5v2A1.5 1.5 0 0 1 11 14H5a1.5 1.5 0 0 1-1.5-1.5v-2A1.5 1.5 0 0 1 5 9h.5z"/><path d="M7.467.133a.5.5 0 0 1 .566 0l5.5 3.5a.5.5 0 0 1 .234.424v4.79a6.5 6.5 0 0 1-3.288 5.611l-2.01 1.118a.5.5 0 0 1-.478 0l-2.01-1.118A6.5 6.5 0 0 1 1.233 8.847V4.057a.5.5 0 0 1 .234-.424l5.5-3.5z"/>
+                    </svg>
+                  </span>
+                  {{ form.password2 }}
+                </div>
+                {{ form.password2.errors }}
+              </div>
+
+              <button class="btn btn-brand-neon btn-lg w-100 mt-2 text-white">Crear cuenta</button>
+            </form>
+
+            <hr class="my-4 border-secondary-subtle">
+
+            <p class="small mb-0 text-center">
+              ¿Ya tienes cuenta?
+              <a href="{% url 'accounts:login' %}" class="link-brand">Inicia sesión</a>
+            </p>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

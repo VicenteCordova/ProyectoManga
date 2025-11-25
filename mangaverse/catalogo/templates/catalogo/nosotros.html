@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nosotros — MangaVerse{% endblock %}
+
+{% block extra_head %}
+  <!--  SEO básico -->
+  <meta name="description" content="Conoce la historia, misión, visión y equipo detrás de MangaVerse.">
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="section-hero text-center">
+  <div class="container">
+    <img src="{% static 'images/sinfondo.png' %}" alt="MangaVerse" width="250" height="250" class="mb-3 opacity-75">
+    <h1 class="mb-2">Sobre <span class="text-primary text-white">MangaVerse</span></h1>
+    <p class="lead text-faint mx-auto text-white" style="max-width: 720px;">
+      Un proyecto hecho por fans del manga para fans del manga. Buscamos ofrecer una experiencia simple,
+      rápida y agradable para descubrir, leer y organizar tus series favoritas.
+    </p>
+    <div class="mt-3">
+      <a class="btn btn-outline-warning btn-lg border border-2 border-light text-white " href="{% url 'catalogo:lista-mangas' %}">Ver Catálogo</a>
+    </div>
+  </div>
+</section>
+
+<!-- Misión / Visión / Valores -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div class="card soft h-100">
+          <div class="card-body">
+            <h5 class="card-title text-white">Misión</h5>
+            <p class="card-text text-faint text-white">
+              Democratizar el acceso al manga con una plataforma clara, estable y estética, cuidando el rendimiento
+              y la experiencia del usuario en dispositivos móviles y escritorio.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card soft h-100">
+          <div class="card-body">
+            <h5 class="card-title text-white">Visión</h5>
+            <p class="card-text text-faint text-white">
+              Ser el punto de referencia en habla hispana e inglesa para descubrir nuevas historias, conectar comunidades
+              y apoyar a creadores y editoriales con herramientas justas y transparentes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card soft h-100">
+          <div class="card-body">
+            <h5 class="card-title text-white">Valores</h5>
+            <ul class="mb-0 text-faint text-white">
+              <li>Respeto por autores y comunidades</li>
+              <li>Calidad de lectura y accesibilidad</li>
+              <li>Transparencia técnica y mejora continua</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div><!-- /row -->
+  </div>
+</section>
+
+<!-- Historia / Timeline simple -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-3 align-items-stretch">
+      <div class="col-12 col-lg-6">
+        <div class="card soft h-100">
+          <div class="card-body">
+            <h4 class="card-title mb-3 text-white">Nuestra historia</h4>
+            <p class="text-faint text-white">
+              MangaVerse nace como un proyecto académico que evolucionó hacia una plataforma con
+              enfoque real de producto: arquitectura limpia en Django, despliegues ordenados y
+              una UI consistente con Bootstrap 5 y estilos propios.
+            </p>
+            <p class="text-faint mb-0 text-white">
+              Hoy seguimos puliendo el rendimiento, la estructura de datos y la accesibilidad,
+              siempre escuchando a la comunidad.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="card soft h-100">
+          <div class="card-body">
+            <h4 class="card-title mb-3 text-white">Hitos</h4>
+
+            <div class="d-flex gap-3 mb-3">
+              <div class="pt-1">
+                <span class="badge bg-succes-subtle border border-light-subtle text-light">2025</span>
+              </div>
+              <div>
+                <div class="fw-semibold text-white">Versión inicial estable</div>
+                <div class="text-faint small text-white">Diseño oscuro, catálogo y detalle de mangas/capítulos.</div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-3 mb-3">
+              <div class="pt-1">
+                <span class="badge bg-succes-subtle border border-light-subtle text-light">Próximo</span>
+              </div>
+              <div>
+                <div class="fw-semibold text-white">Favoritos y listas</div>
+                <div class="text-faint small text-white">Colecciones personalizadas y recomendaciones.</div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-3">
+              <div class="pt-1">
+                <span class="badge bg-succes-subtle border border-light-subtle text-light">Próximo</span>
+              </div>
+              <div>
+                <div class="fw-semibold text-white">Modo sin conexión</div>
+                <div class="text-faint small text-white">Descargas controladas y lectura offline (según permisos).</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+  </div>
+</section>
+
+<!-- Equipo -->
+<!-- Equipo (centrado con una sola isla) -->
+<section class="py-5">
+  <div class="container">
+
+    <!-- Título centrado -->
+    <h4 class="mb-3 text-center text-white ">Equipo</h4>
+
+    <!-- Imagen debajo del título -->
+    <div class="text-center mb-4">
+      <img src="{% static 'images/acercade.png' %}" 
+           alt="Equipo MangaVerse" 
+           class="img-fluid" 
+           style="max-width: 500px; opacity: 0.8;">
+    </div>
+
+    <!-- card centrada -->
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="card soft h-100 text-center">
+          <div class="card-body">
+            <div class="d-flex flex-column align-items-center gap-3 mb-3">
+              <img src="{% static 'images/sinfondo.png' %}" 
+                   alt="Avatar" width="72" height="72" 
+                   class="rounded-circle opacity-75">
+              <div>
+                <div class="fw-semibold text-white">José Gónzalez || Pedro Luengo || Vicente Córdova</div>
+                <div class="text-faint small">Desarrollo Mangaverse</div>
+              </div>
+            </div>
+            <p class="text-faint mb-0">
+              Enfoque en arquitectura limpia, rendimiento y experiencias de lectura. 
+              Construyendo MangaVerse con Bootstrap 5, Django y buenas prácticas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- CTA final -->
+<section class="py-5 text-center">
+  <div class="container">
+    <p class="text-faint mb-3">¿Tienes ideas o quieres colaborar?</p>
+    <p class="text-faint mb-3">Envianos tu propuesta</p>
+    <p class="text-faint mb-3">CloudCode@Gmail.com</p>
+  </div>
+</section>
+
+{% endblock %}

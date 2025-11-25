@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Catálogo de Mangas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 text-white mb-0">Mangas Disponibles</h1>
+    {% if request.user.is_authenticated and perms.catalogo.add_manga %}
+      <a class="btn btn-primary" href="{% url 'catalogo:manga-create' %}">Nuevo Manga</a>
+    {% endif %}
+  </div>
+
+  {% if mangas %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+      {% for manga in mangas %}
+        <div class="col">
+          <div class="card h-100 bg-dark text-white border-0 shadow rounded-4 overflow-hidden">
+            <div class="ratio ratio-4x3">
+              {% if manga.portada %}
+                <img src="{{ manga.portada.url }}" alt="Portada de {{ manga.titulo }}"
+                     class="w-100 h-100 object-fit-cover">
+              {% else %}
+                <img src="{% static 'images/placeholder_cover.png' %}" alt="Sin portada"
+                     class="w-100 h-100 object-fit-cover">
+              {% endif %}
+            </div>
+
+            <div class="card-body">
+              <h5 class="card-title mb-1">
+                <a href="{% url 'catalogo:manga-detail' manga_slug=manga.slug %}"
+                   class="stretched-link link-light link-underline-opacity-0 link-underline-opacity-75-hover">
+                  {{ manga.titulo }}
+                </a>
+              </h5>
+              <div class="small text-white">{{ manga.autor }}</div>
+              <p class="card-text mt-2 mb-0 text-white">{{ manga.descripcion|truncatewords:22 }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-white-50">No hay mangas disponibles.</p>
+  {% endif %}
+</div>
+{% endblock %}

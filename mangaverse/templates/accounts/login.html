@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Iniciar sesión | Mangaverse{% endblock %}
+
+{% block content %}
+<section class="auth-section d-flex align-items-center">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xxl-4">
+
+        <!-- Tarjeta tipo “glass” con borde neón -->
+        <div class="card auth-card border-0 shadow-lg">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Branding -->
+            <div class="text-center mb-4">
+              <img src="{% static 'images/sinfondo.png' %}" class="auth-logo mb-2" alt="Mangaverse" width="180" height="180">
+              <h1 class="h4 m-0 fw-bold brand-gradient-text">Iniciar sesión</h1>
+            </div>
+
+            <!-- Formulario -->
+            <form method="post" novalidate class="auth-form">
+              {% csrf_token %}
+
+              {% if form.non_field_errors %}
+              <div class="alert alert-danger py-2 px-3 mb-3">
+                {{ form.non_field_errors }}
+              </div>
+              {% endif %}
+
+              <div class="mb-3">
+                <div class="input-group input-group-lg auth-input">
+                  <span class="input-group-text">
+                    <!-- icono usuario -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                      <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4"/>
+                    </svg>
+                  </span>
+                  {{ form.username }}
+                </div>
+                {{ form.username.errors }}
+              </div>
+
+              <div class="mb-2">
+                <div class="input-group input-group-lg auth-input">
+                  <span class="input-group-text">
+                    <!-- icono candado -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M8 1a3 3 0 0 0-3 3v2H4a2 2 0 0 0-2 2v4.5A1.5 1.5 0 0 0 3.5 14h9A1.5 1.5 0 0 0 14 12.5V8a2 2 0 0 0-2-2h-1V4a3 3 0 0 0-3-3zM6 6V4a2 2 0 1 1 4 0v2z"/>
+                    </svg>
+                  </span>
+                  {{ form.password }}
+                </div>
+                {{ form.password.errors }}
+              </div>
+             
+
+              <button class="btn btn-brand-neon btn-lg w-100  fw-bold brand-gradient-text" >Entrar</button>
+            </form>
+
+            <hr class="my-4 border-secondary-subtle">
+
+            <p class="small mb-0 text-center">
+              ¿No tienes cuenta?
+              <a href="{% url 'accounts:register' %}" class="link-brand">Crear cuenta</a>
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

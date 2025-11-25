@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Buscar — "{{ query }}"{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-1">Resultados para <span class="text-warning">"{{ query }}"</span></h1>
+      <p class="text-muted small mb-0 text-white">{{ total }} coincidencia{{ total|pluralize:"s" }}</p>
+    </div>
+  </div>
+
+  {% if page_obj.object_list %}
+    <div class="row g-3">
+      {% for manga in page_obj.object_list %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <div class="card h-100 shadow-sm">
+            <div class="ratio ratio-4x3">
+              {% if manga.portada %}
+                <img src="{{ manga.portada.url }}" alt="Portada"
+                     class="w-100 h-100 object-fit-cover rounded-top">
+              {% else %}
+                <img src="{% static 'images/naruto.png' %}" alt="Portada"
+                     class="w-100 h-100 object-fit-cover rounded-top">
+              {% endif %}
+            </div>
+            <div class="card-body d-flex flex-column">
+              <h2 class="h6 card-title mb-1 text-truncate">{{ manga.titulo }}</h2>
+              <p class="card-subtitle small text-muted mb-3 text-truncate">
+                {{ manga.descripcion|default:"Sin descripción" }}
+              </p>
+              <a href="{% url 'catalogo:manga-detail' manga.slug %}" class="btn btn-outline-warning mt-auto">
+                Ver detalle
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!--paginación-->
+  {% else %}
+    <div class="alert alert-warning">No encontramos resultados para <strong>"{{ query }}"</strong>.</div>
+  {% endif %}
+{% endblock %}

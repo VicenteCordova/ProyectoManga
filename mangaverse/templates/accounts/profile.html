@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil | Mangaverse{% endblock %}
+
+{# --- Estilos locales para alinear con login/registro --- #}
+{% block extra_head %}
+<style>
+  .profile-card.auth-card { color: #f8f9fa; }               /* texto claro sobre glass */
+  .profile-card .form-label,
+  .profile-card dt { color: #fff !important; font-weight: 500; letter-spacing: .3px; }
+  .profile-meta dd { color: #e9ecef; margin-bottom: .75rem; }
+  .profile-avatar {
+    width: 72px; height: 72px; border-radius: 16px; 
+    object-fit: cover; box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+  .profile-actions .btn { min-width: 160px; }
+  .profile-divider { border-color: rgba(255,255,255,.15) !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-section d-flex align-items-center">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+        <div class="card auth-card profile-card border-0 shadow-lg">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Encabezado / avatar -->
+                <h1 class="h4 m-0 fw-bold brand-gradient-text">Mi perfil</h1>
+                <p class="text-white small mb-0 ">Tu identidad en el universo manga.</p>
+              </div>
+            </div>
+
+            <hr class="profile-divider mb-4">
+
+            <!-- Datos de perfil -->
+            <dl class="row profile-meta mb-0">
+              <dt class="col-sm-4 col-lg-3">Usuario</dt>
+              <dd class="col-sm-8 col-lg-9">{{ user_obj.username }}</dd>
+
+              <dt class="col-sm-4 col-lg-3">Email</dt>
+              <dd class="col-sm-8 col-lg-9">{{ user_obj.email|default:"—" }}</dd>
+
+              <dt class="col-sm-4 col-lg-3">Nombre</dt>
+              <dd class="col-sm-8 col-lg-9">{{ user_obj.get_full_name|default:user_obj.username }}</dd>
+
+              <dt class="col-sm-4 col-lg-3">Último acceso</dt>
+              <dd class="col-sm-8 col-lg-9">{{ user_obj.last_login|date:"d/m/Y H:i" }}</dd>
+
+              <dt class="col-sm-4 col-lg-3">Perfil creado</dt>
+              <dd class="col-sm-8 col-lg-9">{{ user_obj.date_joined|date:"d/m/Y H:i" }}</dd>
+            </dl>
+
+            <!-- Acciones -->
+            <div class="profile-actions d-flex flex-wrap gap-2 mt-4">
+              <a href="{% url 'catalogo:home' %}" class="btn btn-outline-light">Volver al inicio</a>
+              {# mejora continua, edición de perfil, activa este botón, Recordar #}
+              {# <a href="{% url 'accounts:profile_edit' %}" class="btn btn-brand-neon">Editar perfil</a> #}
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

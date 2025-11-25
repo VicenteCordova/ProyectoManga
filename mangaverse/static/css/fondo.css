@@ -1,0 +1,50 @@
+/* === Reset básico del fondo === */
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #3a3a3b;            /* color base por si no carga la imagen */
+  overflow: hidden;                /* sin scroll en el iframe del fondo */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Imagen de fondo a pantalla completa === */
+.bg-image {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/static/images/fondo.png'); /*imagen */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: saturate(1.05) contrast(1.05) brightness(0.95);
+  transform: scale(1.02); /* evita bordes negros en algunos navegadores */
+}
+
+/* === Gradiente suave para mejorar legibilidad del contenido encima === */
+.bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(1200px 600px at 90% 20%, rgba(0,0,0,0.20), rgba(207, 207, 207, 0.6)),
+    linear-gradient(120deg, rgba(10,10,25,0.25), rgba(206, 206, 206, 0.7));
+  pointer-events: none; /* no bloquea clics */
+  animation: glow 12s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  0%   { filter: blur(0px) brightness(0.98); }
+  100% { filter: blur(1px) brightness(1.02); }
+}
+
+/* === Canvas de estrellas (animación liviana) === */
+#stars-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.6;
+}

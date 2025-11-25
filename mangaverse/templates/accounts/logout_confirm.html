@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Cerrar sesión | Mangaverse{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-5">
+      <div class="card auth-card border-0 shadow-lg">
+        <div class="card-body p-4">
+          <h1 class="h5 mb-3">¿Cerrar sesión?</h1>
+          <p class="text-muted">Se cerrará tu sesión actual en Mangaverse.</p>
+          <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-brand-neon me-2" type="submit">Sí, salir</button>
+            <a class="btn btn-outline-light" href="{% url 'catalogo:home' %}">Cancelar</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
