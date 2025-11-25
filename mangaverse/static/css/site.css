@@ -1,43 +1,74 @@
 /* ===== Base y layout ===== */
-:root{
-  --brand-primary:#7c4dff;
-  --brand-bg:#0b0b12;
-  --text:#f1f3f5;
+:root {
+  /* --- SUPERFICIES (Fondo) --- */
+  /* Nunca usar negro absoluto. Usamos un gris muy oscuro y frío */
+  --mv-bg-main: #09090b;       /* Fondo de la página */
+  --mv-bg-surface: #18181b;    /* Tarjetas y barras laterales */
+  --mv-bg-elevated: #27272a;   /* Elementos flotantes / Hovers */
+
+  /* --- ACENTOS (Tu marca) --- */
+  /* Tu morado actual es bueno, lo mantenemos como primario */
+  --mv-primary: #7c4dff;       
+  --mv-primary-glow: rgba(124, 77, 255, 0.4);
+  
+  /* Color secundario para contraste (Botones de acción, Links) */
+  --mv-secondary: #00e5ff;     /* Cian Eléctrico - Cyberpunk */
+  
+  /* Color de "Atención" (Notificaciones, Favoritos) */
+  --mv-accent: #ff2e63;        /* Rosa Neón */
+
+  /* --- TEXTO (Legibilidad) --- */
+  --mv-text-high: #f4f4f5;     /* Títulos (Casi blanco) */
+  --mv-text-med: #a1a1aa;      /* Párrafos (Gris claro) */
+  --mv-text-low: #52525b;      /* Placeholders / Deshabilitado */
+  
+  /* --- BORDES --- */
+  --mv-border: rgba(255, 255, 255, 0.08);
 }
-html,body{ height:100%; }
-body{
-  min-height:100vh;
-  color:var(--text);
-  background: var(--brand-bg);
+
+/* APLICACIÓN GLOBAL */
+body {
+  background-color: var(--mv-bg-main);
+  color: var(--mv-text-high);
+  font-family: 'Inter', system-ui, sans-serif; /* Tipografía limpia */
 }
-.page-wrap{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
+
+html, body { height:100%; }
+
+body {
+  min-height: 100vh;
+  /* color: var(--text);  <-- Eliminado para usar la variable del sistema nuevo */
+  /* background: var(--brand-bg); <-- Eliminado */
+}
+
+.page-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===== Fondo por iframe (NO imagen desde CSS) ===== */
-.bg-layer{
-  position:fixed;
-  inset:0;
-  z-index:-3;
-  overflow:hidden;
-  pointer-events:none;
-  background:#0b0b12;
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  overflow: hidden;
+  pointer-events: none;
+  background: #0b0b12;
 }
-.bg-iframe{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  border:0;
-  opacity:.9;
-  transform:scale(1.02);
+.bg-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: .9;
+  transform: scale(1.02);
 }
-.bg-overlay{
-  position:fixed;
-  inset:0;
-  z-index:-2;
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
   background:
     radial-gradient(1200px 600px at 50% 20%, rgba(0,0,0,.25), rgba(0,0,0,.65)),
     linear-gradient(to bottom, rgba(10,10,25,.35), rgba(10,10,25,.85));
@@ -45,43 +76,43 @@ body{
 }
 
 /* ===== Navbar / botones ===== */
-.navbar-brand{ letter-spacing:.3px; }
-.btn-brand{
-  background:var(--brand-primary);
-  color:#fff;
-  border:none;
+.navbar-brand { letter-spacing: .3px; }
+.btn-brand {
+  background: var(--mv-primary); /* Actualizado a variable */
+  color: #fff;
+  border: none;
 }
-.btn-brand:hover{ filter:brightness(1.07); }
+.btn-brand:hover { filter: brightness(1.07); }
 
 /* ===== Secciones bonitas por defecto ===== */
-.section-hero{
-  padding:6rem 0 4rem;
-  text-align:center;
+.section-hero {
+  padding: 6rem 0 4rem;
+  text-align: center;
 }
-.section-hero h1{
-  font-weight:800;
-  line-height:1.1;
-  margin-bottom:.5rem;
+.section-hero h1 {
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: .5rem;
 }
-.section-hero .lead{
-  max-width:720px;
-  margin-inline:auto;
-  opacity:.95;
+.section-hero .lead {
+  max-width: 720px;
+  margin-inline: auto;
+  opacity: .95;
 }
 
 /* ===== Tarjetas traslúcidas ===== */
-.card.soft{
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.12);
-  box-shadow:0 8px 30px rgba(0,0,0,.25);
+.card.soft {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
   backdrop-filter: blur(2px);
 }
 
 /* ===== Utilidades ===== */
-.text-faint{ color:#e9ecef; opacity:.9; }
+.text-faint { color: #e9ecef; opacity: .9; }
 
 /* ======== Mangaverse Auth Styles ======== */
-:root{
+:root {
   --mv-bg-card: rgba(18,18,24,0.55);     /* glass oscura */
   --mv-bg-card-hover: rgba(18,18,24,0.65);
   --mv-stroke: rgba(255,255,255,0.15);   /* borde suave */
@@ -92,31 +123,32 @@ body{
 }
 
 /* Sección con altura agradable para centrar vertical */
-.auth-section{ min-height: 72vh; }
+.auth-section { min-height: 72vh; }
 
 /* Tarjeta glass con borde “neón” discreto */
-.auth-card{
+.auth-card {
   backdrop-filter: blur(10px);
   background: var(--mv-bg-card);
   border-radius: 1rem;
   border: 1px solid var(--mv-stroke);
   box-shadow: var(--mv-glow);
   transition: background .2s ease, transform .15s ease, box-shadow .2s ease;
+  color: #f8f9fa; /* Asegura contraste */
 }
-.auth-card:hover{
+.auth-card:hover {
   background: var(--mv-bg-card-hover);
   transform: translateY(-1px);
   box-shadow: 0 0 34px rgba(199, 125, 255, 0.18);
 }
 
 /* Logo pequeño y redondeado */
-.auth-logo{
+.auth-logo {
   filter: drop-shadow(0 2px 10px rgba(0,0,0,.35));
   border-radius: 12px;
 }
 
 /* Título con gradiente sutil */
-.brand-gradient-text{
+.brand-gradient-text {
   background: linear-gradient(90deg, var(--mv-brand-1), var(--mv-brand-2), var(--mv-brand-3));
   -webkit-background-clip: text;
   background-clip: text;
@@ -124,27 +156,27 @@ body{
 }
 
 /* Inputs grandes con fondo translúcido */
-.auth-input .input-group-text{
+.auth-input .input-group-text {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.15);
   color: #e9ecef;
 }
-.auth-input input{
+.auth-input input {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.15);
   color: #f8f9fa;
 }
-.auth-input input::placeholder{ color: rgba(248,249,250,0.55); }
+.auth-input input::placeholder { color: rgba(248,249,250,0.55); }
 
 /* Foco con halo cian */
-.auth-input .form-control:focus{
+.auth-input .form-control:focus {
   border-color: var(--mv-brand-1);
   box-shadow: 0 0 0 .2rem rgba(123,223,246,.18);
 }
 
 /* Botón principal con “neón” */
-.btn-brand-neon{
-  --bs-btn-color:#0b0b10;
+.btn-brand-neon {
+  --bs-btn-color: #0b0b10;
   --bs-btn-bg: linear-gradient(90deg, var(--mv-brand-1), var(--mv-brand-2));
   --bs-btn-border-color: transparent;
   --bs-btn-hover-bg: linear-gradient(90deg, var(--mv-brand-2), var(--mv-brand-3));
@@ -154,22 +186,22 @@ body{
   border: none;
   box-shadow: 0 0 20px rgba(123,223,246,.22);
 }
-.btn-brand-neon:hover{
+.btn-brand-neon:hover {
   box-shadow: 0 0 26px rgba(199,125,255,.26);
 }
 
 /* Enlaces de marca */
-.link-brand{
+.link-brand {
   color: var(--mv-brand-1);
   text-decoration: none;
 }
-.link-brand:hover{
+.link-brand:hover {
   color: var(--mv-brand-2);
   text-decoration: underline;
 }
 
 /* Errores de campo con margen sutil */
-.auth-form .errorlist{
+.auth-form .errorlist {
   margin: .25rem 0 0;
   color: #ffb3c1;         /* combina con brand-3 */
   list-style: none;
@@ -184,15 +216,6 @@ body{
   letter-spacing: 0.3px;
 }
 
-/* También puedes hacer los placeholders un poco más claros */
-.auth-input input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-/* Para asegurar contraste sobre fondo glass oscuro */
-.auth-card {
-  color: #f8f9fa;
-}
 /* Ajusta el color de Bootstrap para todo el sitio */
 :root {
   /* Cian que combina muy bien con fondo oscuro */
@@ -216,9 +239,9 @@ body{
 /* Overlay sutil sobre la imagen para continuidad visual */
 .mv-card .ratio { position: relative; }
 .mv-card-overlay {
-  position:absolute; inset:0;
+  position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 60%, rgba(0,0,0,0) 100%);
-  pointer-events:none;
+  pointer-events: none;
 }
 
 /* Clamping de texto (3 líneas) */

@@ -1,65 +1,96 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ manga.titulo }}{% endblock %}
+{% block title %}{{ manga.titulo }} | Detalle{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-4">
-      {% if manga.portada %}
-        <img src="{{ manga.portada.url }}" alt="Portada de {{ manga.titulo }}" class="img-fluid rounded">
-      {% else %}
-        <img src="{% static 'images/sinfondo.png' %}" alt="Sin portada" class="img-fluid rounded">
+<div class="position-absolute top-0 start-0 w-100 h-50 overflow-hidden" style="z-index: -1; mask-image: linear-gradient(to bottom, black, transparent);">
+  {% if manga.portada %}
+    <img src="{{ manga.portada.url }}" class="w-100 h-100 object-fit-cover opacity-25" style="filter: blur(40px);">
+  {% endif %}
+</div>
+
+<div class="container py-5">
+  <div class="row g-5">
+    <div class="col-md-4 col-lg-3">
+      <div class="position-relative shadow-lg rounded-3 overflow-hidden border border-white border-opacity-10">
+        {% if manga.portada %}
+          <img src="{{ manga.portada.url }}" class="w-100 d-block">
+        {% else %}
+          <div class="ratio ratio-3x4 bg-dark d-flex align-items-center justify-content-center">
+            <img src="{% static 'images/sinfondo.png' %}" class="w-50 opacity-50">
+          </div>
+        {% endif %}
+      </div>
+      
+      {% if perms.catalogo.change_manga %}
+        <div class="d-grid gap-2 mt-3">
+          <a href="{% url 'catalogo:manga-update' manga.slug %}" class="btn btn-sm btn-outline-secondary">Editar Manga</a>
+        </div>
       {% endif %}
     </div>
 
-    <div class="col-md-8">
-      <div class="d-flex align-items-start justify-content-between gap-2">
-        <h1 class="mb-2">{{ manga.titulo }}</h1>
+    <div class="col-md-8 col-lg-9">
+      <h1 class="display-4 fw-bold text-white mb-1 text-uppercase" style="font-family: 'Rajdhani', sans-serif;">{{ manga.titulo }}</h1>
+      <p class="h5 text-secondary mb-4">Autor: <span class="text-white">{{ manga.autor }}</span></p>
 
-        <!-- Acciones protegidas -->
-        {% if request.user.is_authenticated %}
-          <div class="d-flex gap-2">
-            {% if perms.catalogo.change_manga %}
-              <a class="btn btn-outline-primary btn-sm"
-                 href="{% url 'catalogo:manga-update' manga_slug=manga.slug %}">
-                Editar
-              </a>
+      <div class="mb-4">
+        {% if user.is_authenticated %}
+          <button id="fav-btn" data-url="{% url 'accounts:add_favorite' manga.slug %}" class="btn btn-outline-light rounded-pill px-4 d-flex align-items-center gap-2">
+            {% if manga in user.profile.favorites.all %}
+              <span>❤️</span> <span>En Favoritos</span>
+            {% else %}
+              <span>🤍</span> <span>Añadir a Favoritos</span>
             {% endif %}
-            {% if perms.catalogo.delete_manga %}
-              <a class="btn btn-outline-danger btn-sm"
-                 href="{% url 'catalogo:manga-delete' manga_slug=manga.slug %}">
-                Eliminar
-              </a>
-            {% endif %}
-          </div>
+          </button>
         {% endif %}
-        <!-- /Acciones protegidas -->
       </div>
 
-      <p><strong>Autor:</strong> {{ manga.autor }}</p>
-      <p><strong>Descripción:</strong> {{ manga.descripcion|linebreaks }}</p>
+      <div class="card bg-dark bg-opacity-50 border-0 rounded-4 p-4 mb-5">
+        <h6 class="text-uppercase text-secondary fw-bold ls-1 mb-2">Sinopsis</h6>
+        <p class="text-white-50 mb-0" style="line-height: 1.7;">
+          {{ manga.descripcion|default:"Sin descripción."|linebreaks }}
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2">
+        <h3 class="h4 text-white mb-0">Capítulos</h3>
+        <span class="badge bg-secondary bg-opacity-25 text-secondary">{{ chapters.count }}</span>
+      </div>
+
+      {% if chapters %}
+        <div class="list-group rounded-3 overflow-hidden">
+          {% for chapter in chapters %}
+            <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" 
+               class="list-group-item list-group-item-action bg-dark text-white border-secondary border-opacity-25 p-3 d-flex justify-content-between align-items-center">
+              <div>
+                <span class="fw-bold text-primary me-2">#{{ chapter.chapter_number }}</span>
+                {{ chapter.title }}
+              </div>
+              <small class="text-secondary">Leer ➔</small>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-white-50">No hay capítulos aún.</p>
+      {% endif %}
     </div>
   </div>
-
-  <hr>
-
-  <h2>Capítulos Disponibles</h2>
-{% if chapters %}
-  <ul class="list-group">
-    {% for chapter in chapters %}
-      <li class="list-group-item bg-dark text-white border-secondary">
-        <a href="{% url 'catalogo:chapter-detail' manga_slug=manga.slug chapter_slug=chapter.slug %}"
-           class="d-block text-white text-decoration-none link-underline-opacity-0 link-underline-opacity-0-hover">
-          {{ chapter.title }} (Capítulo {{ chapter.chapter_number }})
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p>Aún no hay capítulos disponibles para este manga.</p>
-{% endif %}
-
 </div>
+
+<script>
+  const favBtn = document.getElementById('fav-btn');
+  if(favBtn){
+    favBtn.addEventListener('click', function() {
+      fetch(this.dataset.url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.innerHTML = data.liked ? '<span>❤️</span> <span>En Favoritos</span>' : '<span>🤍</span> <span>Añadir a Favoritos</span>';
+      });
+    });
+  }
+</script>
 {% endblock %}

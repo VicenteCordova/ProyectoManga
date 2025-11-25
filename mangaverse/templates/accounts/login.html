@@ -1,75 +1,110 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Iniciar sesión | Mangaverse{% endblock %}
+{% block title %}Ingresar | MangaVerse{% endblock %}
 
 {% block content %}
-<section class="auth-section d-flex align-items-center">
-  <div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xxl-4">
+<div class="d-flex min-vh-100 align-items-center justify-content-center py-5">
 
-        <!-- Tarjeta tipo “glass” con borde neón -->
-        <div class="card auth-card border-0 shadow-lg">
-          <div class="card-body p-4 p-md-5">
+  <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+    
+    <div class="login-island p-4 p-md-5 position-relative">
+      
+      <div class="position-absolute top-0 start-50 translate-middle-x border-top border-white border-opacity-25 w-50" style="margin-top: 1px;"></div>
 
-            <!-- Branding -->
-            <div class="text-center mb-4">
-              <img src="{% static 'images/sinfondo.png' %}" class="auth-logo mb-2" alt="Mangaverse" width="180" height="180">
-              <h1 class="h4 m-0 fw-bold brand-gradient-text">Iniciar sesión</h1>
-            </div>
-
-            <!-- Formulario -->
-            <form method="post" novalidate class="auth-form">
-              {% csrf_token %}
-
-              {% if form.non_field_errors %}
-              <div class="alert alert-danger py-2 px-3 mb-3">
-                {{ form.non_field_errors }}
-              </div>
-              {% endif %}
-
-              <div class="mb-3">
-                <div class="input-group input-group-lg auth-input">
-                  <span class="input-group-text">
-                    <!-- icono usuario -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                      <path d="M14 14s-1-1.5-6-1.5S2 14 2 14s1-4 6-4 6 4 6 4"/>
-                    </svg>
-                  </span>
-                  {{ form.username }}
-                </div>
-                {{ form.username.errors }}
-              </div>
-
-              <div class="mb-2">
-                <div class="input-group input-group-lg auth-input">
-                  <span class="input-group-text">
-                    <!-- icono candado -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="70" height="18" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M8 1a3 3 0 0 0-3 3v2H4a2 2 0 0 0-2 2v4.5A1.5 1.5 0 0 0 3.5 14h9A1.5 1.5 0 0 0 14 12.5V8a2 2 0 0 0-2-2h-1V4a3 3 0 0 0-3-3zM6 6V4a2 2 0 1 1 4 0v2z"/>
-                    </svg>
-                  </span>
-                  {{ form.password }}
-                </div>
-                {{ form.password.errors }}
-              </div>
-             
-
-              <button class="btn btn-brand-neon btn-lg w-100  fw-bold brand-gradient-text" >Entrar</button>
-            </form>
-
-            <hr class="my-4 border-secondary-subtle">
-
-            <p class="small mb-0 text-center">
-              ¿No tienes cuenta?
-              <a href="{% url 'accounts:register' %}" class="link-brand">Crear cuenta</a>
-            </p>
-
-          </div>
-        </div>
+      <div class="text-center mb-4">
+        <a href="{% url 'catalogo:home' %}" class="d-inline-block text-decoration-none transition-transform hover-scale">
+          <img src="{% static 'images/sinfondo.png' %}" alt="MangaVerse" width="80" class="mb-2 drop-shadow-logo">
+        </a>
+        <h1 class="h4 text-white fw-bold mb-1">Bienvenido a bordo</h1>
+        <p class="text-secondary small">Inicia sesión para acceder a tu biblioteca.</p>
       </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger d-flex align-items-start border-0 bg-danger bg-opacity-10 text-danger mb-4 rounded-3 p-3 small">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0" viewBox="0 0 16 16">
+              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+            </svg>
+            <div>
+              <strong>Error de acceso</strong><br>
+              {{ form.non_field_errors.0 }}
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Usuario</label>
+          {{ form.username }}
+        </div>
+
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <label class="form-label text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Contraseña</label>
+          </div>
+          {{ form.password }}
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-neon transition-transform active-scale">
+            Entrar
+          </button>
+        </div>
+      </form>
+
+      <div class="text-center mt-4 pt-3 border-top border-white border-opacity-10">
+        <span class="text-secondary small">¿Nuevo aquí?</span>
+        <a href="{% url 'accounts:register' %}" class="text-white fw-bold text-decoration-none ms-1 hover-underline">
+          Crear cuenta
+        </a>
+      </div>
+
     </div>
   </div>
-</section>
+</div>
+
+<style>
+  /* La Isla: Fondo sólido oscuro para legibilidad, bordes suaves */
+  .login-island {
+    background-color: #121212; /* Casi negro puro */
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); /* Sombra profunda para dar altura */
+  }
+
+  /* Inputs del form (coinciden con tu forms.py actual) */
+  .bg-dark-input {
+    background-color: #1e1e1e !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: #e0e0e0 !important;
+  }
+  .bg-dark-input:focus {
+    background-color: #252525 !important;
+    border-color: var(--brand-primary) !important; /* Usa tu variable CSS o #7c4dff */
+    box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.15) !important;
+  }
+
+  /* Botón con micro-interacciones */
+  .btn-primary {
+    background-color: #7c4dff;
+    border: none;
+    border-radius: 12px;
+  }
+  .btn-primary:hover {
+    background-color: #6b42db;
+    transform: translateY(-2px); /* Se levanta un poco */
+  }
+  .shadow-neon {
+    box-shadow: 0 4px 20px rgba(124, 77, 255, 0.3);
+  }
+  .active-scale:active {
+    transform: scale(0.98);
+  }
+
+  /* Utilidades */
+  .drop-shadow-logo { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+  .hover-scale:hover { transform: scale(1.05); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .hover-underline:hover { text-decoration: underline !important; }
+</style>
 {% endblock %}

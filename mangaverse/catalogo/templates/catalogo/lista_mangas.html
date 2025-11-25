@@ -1,48 +1,104 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Catálogo de Mangas{% endblock %}
+{% block title %}Catálogo | MangaVerse{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 text-white mb-0">Mangas Disponibles</h1>
-    {% if request.user.is_authenticated and perms.catalogo.add_manga %}
-      <a class="btn btn-primary" href="{% url 'catalogo:manga-create' %}">Nuevo Manga</a>
+<div class="container py-5">
+  
+  <div class="d-flex align-items-end justify-content-between mb-5 border-bottom border-white border-opacity-10 pb-3">
+    <div>
+      <h1 class="h2 text-white fw-bold mb-0 text-uppercase ls-1" style="font-family: 'Rajdhani', sans-serif;">
+        Explorar <span class="text-gradient-cyan">Mangas</span>
+      </h1>
+      <p class="text-secondary small mb-0">Tu próxima obsesión está aquí.</p>
+    </div>
+    
+    {% if perms.catalogo.add_manga %}
+      <a href="{% url 'catalogo:manga-create' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold hover-glow">
+        + Nuevo Manga
+      </a>
     {% endif %}
   </div>
 
   {% if mangas %}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
       {% for manga in mangas %}
         <div class="col">
-          <div class="card h-100 bg-dark text-white border-0 shadow rounded-4 overflow-hidden">
-            <div class="ratio ratio-4x3">
-              {% if manga.portada %}
-                <img src="{{ manga.portada.url }}" alt="Portada de {{ manga.titulo }}"
-                     class="w-100 h-100 object-fit-cover">
-              {% else %}
-                <img src="{% static 'images/placeholder_cover.png' %}" alt="Sin portada"
-                     class="w-100 h-100 object-fit-cover">
-              {% endif %}
-            </div>
-
-            <div class="card-body">
-              <h5 class="card-title mb-1">
-                <a href="{% url 'catalogo:manga-detail' manga_slug=manga.slug %}"
-                   class="stretched-link link-light link-underline-opacity-0 link-underline-opacity-75-hover">
+          
+          <div class="card mv-card h-100 border-0 overflow-hidden position-relative group-hover">
+            <a href="{% url 'catalogo:manga-detail' manga_slug=manga.slug %}" class="text-decoration-none d-block h-100">
+              
+              <div class="position-relative w-100 rounded-3 overflow-hidden shadow-lg bg-dark" style="padding-top: 150%;">
+                {% if manga.portada %}
+                  <img src="{{ manga.portada.url }}" 
+                       alt="{{ manga.titulo }}" 
+                       class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover transition-transform"
+                       loading="lazy"
+                       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  
+                  <div class="position-absolute top-0 start-0 w-100 h-100 align-items-center justify-content-center bg-secondary bg-opacity-25" style="display: none;">
+                     <img src="{% static 'images/sinfondo.png' %}" width="50" class="opacity-50 grayscale">
+                  </div>
+                {% else %}
+                  <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
+                    <img src="{% static 'images/sinfondo.png' %}" width="60" class="opacity-25 grayscale">
+                  </div>
+                {% endif %}
+                
+                <div class="position-absolute top-0 end-0 p-2">
+                  <span class="badge bg-primary shadow-sm">Leer</span>
+                </div>
+              </div>
+              <div class="card-body p-3 bg-surface position-relative z-1 border-top border-white border-opacity-5">
+                <h6 class="card-title text-white fw-bold text-truncate mb-1" title="{{ manga.titulo }}">
                   {{ manga.titulo }}
-                </a>
-              </h5>
-              <div class="small text-white">{{ manga.autor }}</div>
-              <p class="card-text mt-2 mb-0 text-white">{{ manga.descripcion|truncatewords:22 }}</p>
-            </div>
+                </h6>
+                <p class="card-text text-secondary small text-truncate mb-0">
+                  {{ manga.autor|default:"Autor desconocido" }}
+                </p>
+              </div>
+
+            </a>
           </div>
+
         </div>
       {% endfor %}
     </div>
+
   {% else %}
-    <p class="text-white-50">No hay mangas disponibles.</p>
+    <div class="text-center py-5">
+      <div class="mb-3 opacity-25">
+        <img src="{% static 'images/sinfondo.png' %}" width="100" class="grayscale">
+      </div>
+      <h3 class="text-white fw-bold">El archivo está vacío</h3>
+      <p class="text-secondary">No hay mangas disponibles en este momento.</p>
+      {% if perms.catalogo.add_manga %}
+        <a href="{% url 'catalogo:manga-create' %}" class="btn btn-brand-neon mt-3">Agregar el primero</a>
+      {% endif %}
+    </div>
   {% endif %}
 </div>
+
+<style>
+  /* Asegura consistencia con el resto del sitio */
+  .text-gradient-cyan {
+    background: linear-gradient(to right, #00e5ff, #7c4dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  
+  /* Animaciones de tarjeta (Coincidentes con Inicio) */
+  .group-hover:hover img.transition-transform { transform: scale(1.08); }
+  .transition-transform { transition: transform 0.4s ease; }
+
+  /* Fondos */
+  .bg-surface { background-color: #18181b; }
+  
+  /* Utilidades */
+  .grayscale { filter: grayscale(100%); }
+  .hover-glow:hover { box-shadow: 0 0 15px rgba(124, 77, 255, 0.4); }
+  .ls-1 { letter-spacing: 1px; }
+</style>
 {% endblock %}

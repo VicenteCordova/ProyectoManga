@@ -1,13 +1,17 @@
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect
-from .forms import RegisterForm
+from django.http import JsonResponse
+from catalogo.models import Manga
+
+# IMPORTANTE: Aquí importamos todos los formularios necesarios
+from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
 
 def register(request):
     """
-    Crea un usuario usando RegisterForm (basado en UserCreationForm).
+    Crea un usuario usando RegisterForm.
     Si es válido, inicia sesión y redirige a 'Mi perfil'.
     """
     if request.method == "POST":
@@ -24,11 +28,47 @@ def register(request):
 
 @login_required
 def profile(request):
-    """
-    Muestra un perfil básico del usuario autenticado.
-    Más adelante puedes enlazar un modelo Profile (OneToOne).
-    """
-    return render(request, "accounts/profile.html", {"user_obj": request.user})
+    if request.method == 'POST':
+        # Instanciamos los formularios con los datos POST
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+        
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, '¡Tu perfil ha sido actualizado!')
+            return redirect('accounts:profile')
+    else:
+        # Formularios vacíos (con datos actuales) para GET
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = ProfileUpdateForm(instance=request.user.profile)
+
+    # Obtenemos los favoritos para mostrarlos
+    # Usamos .all() si la relación many-to-many ya existe en el profile
+    favoritos = request.user.profile.favorites.all()
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form,
+        'favoritos': favoritos
+    }
+    return render(request, "accounts/profile.html", context)
+
+@login_required
+@require_POST
+def add_favorite(request, manga_slug):
+    """Vista que recibe una petición AJAX para agregar/quitar favorito"""
+    manga = get_object_or_404(Manga, slug=manga_slug)
+    profile = request.user.profile
+    
+    if profile.favorites.filter(id=manga.id).exists():
+        profile.favorites.remove(manga)
+        liked = False
+    else:
+        profile.favorites.add(manga)
+        liked = True
+    
+    return JsonResponse({'liked': liked, 'total': profile.favorites.count()})
 
 @require_POST
 def logout_confirm(request):

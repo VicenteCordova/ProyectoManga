@@ -1,25 +1,32 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{{ chapter.title }} - {{ chapter.manga.titulo }}{% endblock %}
+{% block title %}{{ chapter.title }} | {{ chapter.manga.titulo }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ chapter.manga.titulo }}</h2>
-    <h3>{{ chapter.title }}</h3>
-    <hr>
+<div class="container py-4 text-center">
+  
+  <div class="mb-4 d-flex justify-content-between align-items-center">
+    <a href="{% url 'catalogo:manga-detail' chapter.manga.slug %}" class="btn btn-outline-secondary btn-sm">
+      ← Volver al Manga
+    </a>
+    <h2 class="h5 text-white mb-0">{{ chapter.manga.titulo }} <span class="text-primary">#{{ chapter.chapter_number }}</span></h2>
+    <div style="width: 100px;"></div> </div>
 
-    <div class="chapter-panels text-center"> {% if panels %}
-            {% for panel in panels %}
-                <div class="panel-image mb-2"> 
-                    <img src="{{ panel.image.url }}" alt="Página {{ panel.page_number }}" class="img-fluid" style="max-width: 800px; display: block; margin-left: auto; margin-right: auto;">
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>Este capítulo no tiene contenido aún.</p>
-        {% endif %}
-    </div>
+  <div class="mx-auto bg-black rounded-3 shadow-lg overflow-hidden" style="max-width: 800px; min-height: 500px;">
+    {% if panels %}
+      {% for panel in panels %}
+        <img src="{{ panel.image.url }}" class="img-fluid d-block w-100" alt="Página {{ panel.page_number }}" loading="lazy">
+      {% endfor %}
+    {% else %}
+      <div class="py-5 text-white-50">Este capítulo no tiene páginas cargadas.</div>
+    {% endif %}
+  </div>
 
-    <hr>
-    <a href="{% url 'catalogo:manga-detail' manga_slug=chapter.manga.slug %}" class="btn btn-secondary mt-3">Volver a {{ chapter.manga.titulo }}</a>
+  <div class="mt-5">
+    <a href="{% url 'catalogo:manga-detail' chapter.manga.slug %}" class="btn btn-secondary rounded-pill px-4">
+      Fin del Capítulo
+    </a>
+  </div>
 </div>
 {% endblock %}

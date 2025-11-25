@@ -1,188 +1,256 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Nosotros — MangaVerse{% endblock %}
-
-{% block extra_head %}
-  <!--  SEO básico -->
-  <meta name="description" content="Conoce la historia, misión, visión y equipo detrás de MangaVerse.">
-{% endblock %}
+{% block title %}Misión | MangaVerse{% endblock %}
 
 {% block content %}
 
-<!-- Hero -->
-<section class="section-hero text-center">
-  <div class="container">
-    <img src="{% static 'images/sinfondo.png' %}" alt="MangaVerse" width="250" height="250" class="mb-3 opacity-75">
-    <h1 class="mb-2">Sobre <span class="text-primary text-white">MangaVerse</span></h1>
-    <p class="lead text-faint mx-auto text-white" style="max-width: 720px;">
-      Un proyecto hecho por fans del manga para fans del manga. Buscamos ofrecer una experiencia simple,
-      rápida y agradable para descubrir, leer y organizar tus series favoritas.
-    </p>
-    <div class="mt-3">
-      <a class="btn btn-outline-warning btn-lg border border-2 border-light text-white " href="{% url 'catalogo:lista-mangas' %}">Ver Catálogo</a>
+<section class="d-flex flex-column align-items-center justify-content-center py-5 text-center position-relative">
+    <div class="position-absolute top-0 start-50 translate-middle bg-primary opacity-20 rounded-circle blur-max"></div>
+
+    <div class="container z-1">
+        <h1 class="display-3 fw-bold text-white mb-2 text-uppercase ls-3 glow-text" style="font-family: 'Rajdhani', sans-serif;">
+            Nuestra <span class="text-gradient-cyan">Misión</span>
+        </h1>
+        
+        <div class="d-inline-block border-top border-bottom border-primary border-opacity-50 py-3 px-5 my-4 bg-black bg-opacity-50 backdrop-blur">
+            <p class="lead text-white mb-0 font-monospace small">
+                // OBJETIVO: REINICIAR LA EXPERIENCIA DE LECTURA
+            </p>
+        </div>
+
+        <p class="text-white-emphasis mx-auto mb-5 fs-5" style="max-width: 700px;">
+            Somos el <span class="text-primary fw-bold">Checkpoint</span> que la comunidad necesitaba. 
+            Sin publicidad intrusiva, sin tiempos de carga eternos. Solo manga.
+        </p>
     </div>
-  </div>
 </section>
 
-<!-- Misión / Visión / Valores -->
-<section class="py-5">
-  <div class="container">
-    <div class="row g-3">
-      <div class="col-12 col-md-4">
-        <div class="card soft h-100">
-          <div class="card-body">
-            <h5 class="card-title text-white">Misión</h5>
-            <p class="card-text text-faint text-white">
-              Democratizar el acceso al manga con una plataforma clara, estable y estética, cuidando el rendimiento
-              y la experiencia del usuario en dispositivos móviles y escritorio.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-4">
-        <div class="card soft h-100">
-          <div class="card-body">
-            <h5 class="card-title text-white">Visión</h5>
-            <p class="card-text text-faint text-white">
-              Ser el punto de referencia en habla hispana e inglesa para descubrir nuevas historias, conectar comunidades
-              y apoyar a creadores y editoriales con herramientas justas y transparentes.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-4">
-        <div class="card soft h-100">
-          <div class="card-body">
-            <h5 class="card-title text-white">Valores</h5>
-            <ul class="mb-0 text-faint text-white">
-              <li>Respeto por autores y comunidades</li>
-              <li>Calidad de lectura y accesibilidad</li>
-              <li>Transparencia técnica y mejora continua</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div><!-- /row -->
-  </div>
-</section>
-
-<!-- Historia / Timeline simple -->
-<section class="py-5">
-  <div class="container">
-    <div class="row g-3 align-items-stretch">
-      <div class="col-12 col-lg-6">
-        <div class="card soft h-100">
-          <div class="card-body">
-            <h4 class="card-title mb-3 text-white">Nuestra historia</h4>
-            <p class="text-faint text-white">
-              MangaVerse nace como un proyecto académico que evolucionó hacia una plataforma con
-              enfoque real de producto: arquitectura limpia en Django, despliegues ordenados y
-              una UI consistente con Bootstrap 5 y estilos propios.
-            </p>
-            <p class="text-faint mb-0 text-white">
-              Hoy seguimos puliendo el rendimiento, la estructura de datos y la accesibilidad,
-              siempre escuchando a la comunidad.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-lg-6">
-        <div class="card soft h-100">
-          <div class="card-body">
-            <h4 class="card-title mb-3 text-white">Hitos</h4>
-
-            <div class="d-flex gap-3 mb-3">
-              <div class="pt-1">
-                <span class="badge bg-succes-subtle border border-light-subtle text-light">2025</span>
-              </div>
-              <div>
-                <div class="fw-semibold text-white">Versión inicial estable</div>
-                <div class="text-faint small text-white">Diseño oscuro, catálogo y detalle de mangas/capítulos.</div>
-              </div>
+<section class="container mb-5">
+    <div class="row g-4">
+        
+        <div class="col-md-4">
+            <div class="holo-card h-100 p-4">
+                <div class="icon-glow mb-3">⚡</div>
+                <h3 class="h4 text-white fw-bold text-uppercase">Velocidad Sónica</h3>
+                <p class="text-secondary small">
+                    Motor de renderizado optimizado. Las páginas cargan antes de que termines de parpadear.
+                </p>
+                <div class="holo-line"></div>
             </div>
-
-            <div class="d-flex gap-3 mb-3">
-              <div class="pt-1">
-                <span class="badge bg-succes-subtle border border-light-subtle text-light">Próximo</span>
-              </div>
-              <div>
-                <div class="fw-semibold text-white">Favoritos y listas</div>
-                <div class="text-faint small text-white">Colecciones personalizadas y recomendaciones.</div>
-              </div>
-            </div>
-
-            <div class="d-flex gap-3">
-              <div class="pt-1">
-                <span class="badge bg-succes-subtle border border-light-subtle text-light">Próximo</span>
-              </div>
-              <div>
-                <div class="fw-semibold text-white">Modo sin conexión</div>
-                <div class="text-faint small text-white">Descargas controladas y lectura offline (según permisos).</div>
-              </div>
-            </div>
-
-          </div>
         </div>
-      </div>
 
-    </div><!-- /row -->
-  </div>
-</section>
+        <div class="col-md-4">
+            <div class="holo-card h-100 p-4">
+                <div class="icon-glow mb-3">🛡️</div>
+                <h3 class="h4 text-white fw-bold text-uppercase">Zero Ad-Ware</h3>
+                <p class="text-secondary small">
+                    Entorno limpio. Protegemos tu inmersión bloqueando cualquier distracción externa.
+                </p>
+                <div class="holo-line"></div>
+            </div>
+        </div>
 
-<!-- Equipo -->
-<!-- Equipo (centrado con una sola isla) -->
-<section class="py-5">
-  <div class="container">
+        <div class="col-md-4">
+            <div class="holo-card h-100 p-4">
+                <div class="icon-glow mb-3">💾</div>
+                <h3 class="h4 text-white fw-bold text-uppercase">Save Point</h3>
+                <p class="text-secondary small">
+                    Tu biblioteca personal. Guarda tu progreso y organiza tus lecturas como un verdadero coleccionista.
+                </p>
+                <div class="holo-line"></div>
+            </div>
+        </div>
 
-    <!-- Título centrado -->
-    <h4 class="mb-3 text-center text-white ">Equipo</h4>
-
-    <!-- Imagen debajo del título -->
-    <div class="text-center mb-4">
-      <img src="{% static 'images/acercade.png' %}" 
-           alt="Equipo MangaVerse" 
-           class="img-fluid" 
-           style="max-width: 500px; opacity: 0.8;">
     </div>
+</section>
 
-    <!-- card centrada -->
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-8 col-lg-6">
-        <div class="card soft h-100 text-center">
-          <div class="card-body">
-            <div class="d-flex flex-column align-items-center gap-3 mb-3">
-              <img src="{% static 'images/sinfondo.png' %}" 
-                   alt="Avatar" width="72" height="72" 
-                   class="rounded-circle opacity-75">
-              <div>
-                <div class="fw-semibold text-white">José Gónzalez || Pedro Luengo || Vicente Córdova</div>
-                <div class="text-faint small">Desarrollo Mangaverse</div>
-              </div>
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <div class="quest-board p-5 rounded-4 position-relative overflow-hidden">
+                    <div class="grid-bg position-absolute inset-0 opacity-10"></div>
+                    
+                    <h2 class="h3 text-white fw-bold mb-5 text-center text-uppercase ls-2 position-relative z-1">
+                        <span class="text-primary">Main Quest:</span> Roadmap
+                    </h2>
+
+                    <div class="timeline position-relative z-1">
+                        <div class="timeline-line"></div>
+
+                        <div class="timeline-item d-flex align-items-center mb-5">
+                            <div class="timeline-dot completed shadow-neon-green">✓</div>
+                            <div class="timeline-content ms-4 p-3 glass-panel border-start-green w-100">
+                                <span class="badge bg-success text-black fw-bold mb-2">COMPLETADO</span>
+                                <h5 class="text-white mb-1">Fase 1: El Despertar</h5>
+                                <p class="text-white-50 small mb-0">Lanzamiento del Núcleo, Lector HD y Sistema de Perfiles.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item d-flex align-items-center mb-5">
+                            <div class="timeline-dot active shadow-neon-blue pulse"></div>
+                            <div class="timeline-content ms-4 p-3 glass-panel border-start-blue w-100">
+                                <span class="badge bg-primary text-white fw-bold mb-2">EN PROGRESO...</span>
+                                <h5 class="text-white mb-1">Fase 2: Expansión Social</h5>
+                                <p class="text-white-50 small mb-0">Comentarios, Listas Públicas y Sistema de Amigos.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item d-flex align-items-center">
+                            <div class="timeline-dot locked">🔒</div>
+                            <div class="timeline-content ms-4 p-3 glass-panel border-start-grey w-100 opacity-50">
+                                <span class="badge bg-secondary mb-2">LOCKED</span>
+                                <h5 class="text-white mb-1">Fase 3: Dominación Mundial</h5>
+                                <p class="text-white-50 small mb-0">App nativa (iOS/Android) y lectura offline.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
-            <p class="text-faint mb-0">
-              Enfoque en arquitectura limpia, rendimiento y experiencias de lectura. 
-              Construyendo MangaVerse con Bootstrap 5, Django y buenas prácticas.
-            </p>
-          </div>
         </div>
-      </div>
     </div>
-
-  </div>
 </section>
 
+<section class="py-5 mb-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h3 text-white fw-bold text-uppercase">Guild <span class="text-gradient-cyan">CloudCode</span></h2>
+        </div>
 
-<!-- CTA final -->
-<section class="py-5 text-center">
-  <div class="container">
-    <p class="text-faint mb-3">¿Tienes ideas o quieres colaborar?</p>
-    <p class="text-faint mb-3">Envianos tu propuesta</p>
-    <p class="text-faint mb-3">CloudCode@Gmail.com</p>
-  </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="character-card rounded-4 overflow-hidden border border-secondary border-opacity-25 shadow-lg position-relative" style="background: #0a0a0a;">
+                    
+                    <div class="p-0 bg-black text-center position-relative">
+                        <img src="{% static 'images/acercade.png' %}" 
+                             alt="Equipo CloudCode" 
+                             class="img-fluid w-100"
+                             style="max-height: 550px; object-fit: contain; background-color: #050505;">
+                        
+                        <div class="position-absolute bottom-0 start-0 w-100 h-25 bg-gradient-to-b"></div>
+                    </div>
+
+                    <div class="p-5 text-center position-relative z-1">
+                        
+                        <h3 class="text-white fw-bold mb-3 ls-1">José • Pedro • Vicente</h3>
+                        
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-dark border border-primary text-primary px-3 py-2 rounded-pill">
+                                LVL 99 DEV
+                            </span>
+                            <span class="badge bg-dark border border-info text-info px-3 py-2 rounded-pill">
+                                ADMINS
+                            </span>
+                        </div>
+
+                        <p class="text-white-50 fst-italic mb-4 mx-auto" style="max-width: 500px;">
+                            "Escribimos código para que tú solo te preocupes por leer."
+                        </p>
+                        
+                        <a href="mailto:CloudCode@Gmail.com" class="btn btn-outline-cyan rounded-pill px-5 py-2 fw-bold hover-glow transition-all">
+                            📡 Contactar Guild
+                        </a>
+                    </div>
+
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x bg-primary opacity-10 rounded-circle blur-max" style="width: 60%; height: 300px; z-index: 0;"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<style>
+    /* General */
+    .ls-3 { letter-spacing: 3px; }
+    .ls-1 { letter-spacing: 1px; }
+    .blur-max { width: 600px; height: 600px; filter: blur(120px); pointer-events: none; }
+    
+    .text-gradient-cyan {
+        background: linear-gradient(to right, #00e5ff, #7c4dff);
+        -webkit-background-clip: text;
+        color: transparent;
+    }
+    
+    /* Holographic Cards */
+    .holo-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        position: relative;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    .holo-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--mv-primary);
+        box-shadow: 0 0 20px rgba(124, 77, 255, 0.2);
+        transform: translateY(-5px);
+    }
+    .icon-glow { font-size: 2.5rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+    
+    .holo-line {
+        position: absolute; bottom: 0; left: 0; width: 0%; height: 2px;
+        background: var(--mv-secondary);
+        transition: width 0.3s ease;
+        box-shadow: 0 0 10px var(--mv-secondary);
+    }
+    .holo-card:hover .holo-line { width: 100%; }
+
+    /* Quest Board (Roadmap) */
+    .quest-board { background: #0e0e10; border: 1px solid #2a2a30; }
+    .timeline-line {
+        position: absolute; left: 14px; top: 0; bottom: 0; width: 2px;
+        background: rgba(255,255,255,0.1);
+    }
+    .timeline-dot {
+        width: 30px; height: 30px; border-radius: 50%;
+        background: #18181b; border: 2px solid #333;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-weight: bold; font-size: 0.8rem;
+        position: relative; z-index: 2;
+    }
+    .timeline-dot.completed { background: #198754; border-color: #198754; }
+    .timeline-dot.active { background: var(--mv-primary); border-color: var(--mv-primary); }
+    .timeline-dot.locked { background: #333; border-color: #555; }
+    
+    .glass-panel {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 8px;
+    }
+    .border-start-green { border-left: 3px solid #198754; }
+    .border-start-blue { border-left: 3px solid var(--mv-primary); }
+    .border-start-grey { border-left: 3px solid #555; }
+
+    /* Guild Section Styles */
+    .bg-gradient-to-b { background: linear-gradient(to bottom, transparent 0%, #0a0a0a 100%); }
+    
+    .btn-outline-cyan {
+        color: #00e5ff;
+        border: 1px solid #00e5ff;
+        background: transparent;
+    }
+    .btn-outline-cyan:hover {
+        background: rgba(0, 229, 255, 0.1);
+        color: #fff;
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        border-color: #fff;
+        transform: translateY(-2px);
+    }
+    .transition-all { transition: all 0.3s ease; }
+
+    /* Animaciones */
+    .pulse { animation: pulse-animation 2s infinite; }
+    @keyframes pulse-animation {
+        0% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(124, 77, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0); }
+    }
+</style>
 
 {% endblock %}
