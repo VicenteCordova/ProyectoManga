@@ -9,13 +9,19 @@ from django.core.paginator import Paginator
 from .models import Manga, Chapter, Panel, Arc
 from .forms import MangaForm, ChapterFormSet, ArcFormSet
 
-# ... (Mantén tus vistas de inicio, búsqueda y detalles igual que antes) ...
+# --------------------------
+# VISTAS PÚBLICAS
+# --------------------------
+
 def pagina_inicio(request): 
     recent_mangas = Manga.objects.order_by('-id')[:5]
     popular_mangas = Manga.objects.annotate(num_likes=Count('favorited_by')).order_by('-num_likes')[:5]
     contexto = {'recent_mangas': recent_mangas, 'popular_mangas': popular_mangas}
+    
     if request.user.is_authenticated and hasattr(request.user, 'profile'):
-        contexto['favorites'] = request.user.profile.favorites.all().order_by('-id')[:4]
+        favorites = request.user.profile.favorites.all().order_by('-id')[:4]
+        contexto['favorites'] = favorites
+
     return render(request, 'catalogo/inicio.html', contexto)
 
 def lista_mangas(request):
@@ -27,8 +33,15 @@ def nosotros(request):
 def search(request):
     query = (request.GET.get('q') or '').strip()
     if not query: return redirect('catalogo:lista-mangas')
+    
     chapter_manga_ids = Chapter.objects.filter(Q(title__icontains=query)).values_list('manga_id', flat=True)
-    mangas_qs = Manga.objects.filter(Q(titulo__icontains=query) | Q(descripcion__icontains=query) | Q(autor__icontains=query) | Q(id__in=chapter_manga_ids)).distinct().order_by('titulo')
+    mangas_qs = Manga.objects.filter(
+        Q(titulo__icontains=query) | 
+        Q(descripcion__icontains=query) | 
+        Q(autor__icontains=query) | 
+        Q(id__in=chapter_manga_ids)
+    ).distinct().order_by('titulo')
+    
     paginator = Paginator(mangas_qs, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
     return render(request, 'catalogo/search_results.html', {'query': query, 'page_obj': page_obj, 'total': mangas_qs.count()})
@@ -36,14 +49,18 @@ def search(request):
 def search_suggest(request):
     q = (request.GET.get('q') or '').strip()
     if not q: return JsonResponse({'results': []})
+    
     chapter_manga_ids = Chapter.objects.filter(Q(title__icontains=q)).values_list('manga_id', flat=True)
-    qs = Manga.objects.filter(Q(titulo__icontains=q) | Q(descripcion__icontains=q) | Q(autor__icontains=q) | Q(id__in=chapter_manga_ids)).distinct().order_by('titulo')[:8]
-    results = [{'title': m.titulo, 'author': m.autor or "", 'url': reverse("catalogo:manga-detail", args=[m.slug]), 'cover': m.portada.url if m.portada else "", 'snippet': (m.descripcion or "")[:120]} for m in qs]
+    qs = Manga.objects.filter(
+        Q(titulo__icontains=q) | Q(descripcion__icontains=q) | Q(autor__icontains=q) | Q(id__in=chapter_manga_ids)
+    ).distinct().order_by('titulo')[:8]
+    
+    results = [{'title': m.titulo, 'author': m.autor or "", 'url': reverse("catalogo:manga-detail", args=[m.slug]), 'cover': m.portada.url if m.portada else ""} for m in qs]
     return JsonResponse({"results": results})
 
 def manga_detail_view(request, manga_slug):
     manga = get_object_or_404(Manga, slug=manga_slug)
-    chapters = manga.chapters.all().select_related('arc').order_by('chapter_number')
+    chapters = manga.chapters.all().order_by('chapter_number')
     return render(request, 'catalogo/manga_detail.html', {'manga': manga, 'chapters': chapters})
 
 def chapter_detail_view(request, manga_slug, chapter_slug):
@@ -51,9 +68,9 @@ def chapter_detail_view(request, manga_slug, chapter_slug):
     panels = chapter.panels.all().order_by('page_number')
     return render(request, 'catalogo/chapter_detail.html', {'chapter': chapter, 'panels': panels})
 
-# ---------------------------
-#  GESTIÓN Y PERMISOS
-# ---------------------------
+# --------------------------
+# GESTIÓN (CRUD)
+# --------------------------
 
 class OwnerOrAdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):
@@ -70,6 +87,7 @@ class MangaCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         if self.request.method == 'POST':
             context['arcs_formset'] = ArcFormSet(self.request.POST, prefix='arcs')
+            # Pasamos FILES al formset de capítulos
             context['chapters_formset'] = ChapterFormSet(self.request.POST, self.request.FILES, prefix='chapters')
         else:
             context['arcs_formset'] = ArcFormSet(prefix='arcs')
@@ -91,29 +109,40 @@ class MangaCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             arcs_formset.instance = self.object
             arcs_formset.save()
 
-            # 3. Guardar Capítulos
-            chapters = chapters_formset.save(commit=False)
+            # 3. Guardar Capítulos y PROCESAR IMÁGENES MANUALMENTE
+            # Guardamos los objetos capítulo pero sin commitear a DB aún si fuera necesario, 
+            # pero aquí usaremos el save del formset y luego iteraremos.
             
-            # Iteramos sobre los formularios del formset para emparejar archivos con capítulos
-            for i, chapter_form in enumerate(chapters_formset.forms):
-                # Si el formulario no se va a eliminar y tiene datos
-                if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
-                    # Guardamos el capítulo primero para tener ID
-                    chapter_instance = chapter_form.save(commit=False)
-                    chapter_instance.manga = self.object
-                    chapter_instance.save()
+            # Guardamos los formularios para tener las instancias de Chapter creadas
+            instances = chapters_formset.save(commit=False)
+            for obj in instances:
+                obj.manga = self.object
+                obj.save()
+            
+            # Manejo de borrados
+            for obj in chapters_formset.deleted_objects:
+                obj.delete()
 
-                    # MAGIA: Buscamos los archivos con el prefijo correcto (ej: chapters-0-images)
-                    files_key = f"{chapters_formset.prefix}-{i}-images"
-                    images = self.request.FILES.getlist(files_key)
+            # AHORA LA MAGIA: Iteramos sobre los formularios para sacar las imágenes crudas
+            for i, chapter_form in enumerate(chapters_formset.forms):
+                if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
+                    # La instancia ya debería tener ID gracias al save() anterior
+                    chapter_instance = chapter_form.instance
                     
-                    # Creamos los paneles
-                    for idx, img in enumerate(images):
-                        Panel.objects.create(
-                            chapter=chapter_instance,
-                            image=img,
-                            page_number=idx + 1 # Numeración automática
-                        )
+                    # Buscamos en request.FILES usando el prefijo del formset
+                    # El nombre del campo en HTML es: chapters-0-images, chapters-1-images, etc.
+                    files_key = f"{chapters_formset.prefix}-{i}-images"
+                    
+                    images_list = self.request.FILES.getlist(files_key)
+                    
+                    if images_list:
+                        start_page = chapter_instance.panels.count() + 1
+                        for idx, img in enumerate(images_list):
+                            Panel.objects.create(
+                                chapter=chapter_instance,
+                                image=img,
+                                page_number=start_page + idx
+                            )
 
             messages.success(self.request, '¡Manga creado exitosamente!')
             return HttpResponseRedirect(self.get_success_url())
@@ -149,25 +178,28 @@ class MangaUpdateView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, UpdateView)
             self.object = form.save()
             arcs_formset.save()
             
-            # Misma lógica de guardado manual de imágenes para Update
+            # Misma lógica manual para Update
+            instances = chapters_formset.save(commit=False)
+            for obj in instances:
+                obj.manga = self.object
+                obj.save()
+            for obj in chapters_formset.deleted_objects:
+                obj.delete()
+
             for i, chapter_form in enumerate(chapters_formset.forms):
                 if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
-                    # Si el capítulo ya existe (tiene ID), lo usamos. Si no, se crea.
-                    chapter_instance = chapter_form.save(commit=False)
-                    chapter_instance.manga = self.object
-                    chapter_instance.save()
-
+                    chapter_instance = chapter_form.instance
                     files_key = f"{chapters_formset.prefix}-{i}-images"
-                    images = self.request.FILES.getlist(files_key)
+                    images_list = self.request.FILES.getlist(files_key)
                     
-                    # Si hay imágenes nuevas, las agregamos al final (o desde el 1 si no había)
-                    current_max_page = chapter_instance.panels.count()
-                    for idx, img in enumerate(images):
-                        Panel.objects.create(
-                            chapter=chapter_instance,
-                            image=img,
-                            page_number=current_max_page + idx + 1
-                        )
+                    if images_list:
+                        start_page = chapter_instance.panels.count() + 1
+                        for idx, img in enumerate(images_list):
+                            Panel.objects.create(
+                                chapter=chapter_instance,
+                                image=img,
+                                page_number=start_page + idx
+                            )
 
             messages.success(self.request, 'Manga actualizado correctamente.')
             return HttpResponseRedirect(self.get_success_url())
