@@ -69,7 +69,7 @@ def chapter_detail_view(request, manga_slug, chapter_slug):
     return render(request, 'catalogo/chapter_detail.html', {'chapter': chapter, 'panels': panels})
 
 # --------------------------
-# GESTIÓN (CRUD)
+# GESTIÓN Y PERMISOS (CRUD)
 # --------------------------
 
 class OwnerOrAdminRequiredMixin(UserPassesTestMixin):
@@ -87,7 +87,7 @@ class MangaCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         if self.request.method == 'POST':
             context['arcs_formset'] = ArcFormSet(self.request.POST, prefix='arcs')
-            # Pasamos FILES al formset de capítulos
+            # PASAMOS FILES AL FORMSET
             context['chapters_formset'] = ChapterFormSet(self.request.POST, self.request.FILES, prefix='chapters')
         else:
             context['arcs_formset'] = ArcFormSet(prefix='arcs')
@@ -110,39 +110,35 @@ class MangaCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             arcs_formset.save()
 
             # 3. Guardar Capítulos y PROCESAR IMÁGENES MANUALMENTE
-            # Guardamos los objetos capítulo pero sin commitear a DB aún si fuera necesario, 
-            # pero aquí usaremos el save del formset y luego iteraremos.
-            
-            # Guardamos los formularios para tener las instancias de Chapter creadas
             instances = chapters_formset.save(commit=False)
             for obj in instances:
                 obj.manga = self.object
                 obj.save()
             
-            # Manejo de borrados
+            # Borrados
             for obj in chapters_formset.deleted_objects:
                 obj.delete()
 
-            # AHORA LA MAGIA: Iteramos sobre los formularios para sacar las imágenes crudas
+            # LÓGICA DE SUBIDA MÚLTIPLE
             for i, chapter_form in enumerate(chapters_formset.forms):
+                # Verificamos que el form no esté marcado para borrar y tenga datos
                 if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
-                    # La instancia ya debería tener ID gracias al save() anterior
                     chapter_instance = chapter_form.instance
                     
-                    # Buscamos en request.FILES usando el prefijo del formset
-                    # El nombre del campo en HTML es: chapters-0-images, chapters-1-images, etc.
-                    files_key = f"{chapters_formset.prefix}-{i}-images"
-                    
-                    images_list = self.request.FILES.getlist(files_key)
-                    
-                    if images_list:
-                        start_page = chapter_instance.panels.count() + 1
-                        for idx, img in enumerate(images_list):
-                            Panel.objects.create(
-                                chapter=chapter_instance,
-                                image=img,
-                                page_number=start_page + idx
-                            )
+                    # Si el capítulo se guardó correctamente, buscamos sus archivos
+                    if chapter_instance.pk:
+                        # Reconstruimos el nombre del input: chapters-0-images
+                        files_key = f"{chapters_formset.prefix}-{i}-images"
+                        images_list = self.request.FILES.getlist(files_key)
+                        
+                        if images_list:
+                            start_page = chapter_instance.panels.count() + 1
+                            for idx, img in enumerate(images_list):
+                                Panel.objects.create(
+                                    chapter=chapter_instance,
+                                    image=img,
+                                    page_number=start_page + idx
+                                )
 
             messages.success(self.request, '¡Manga creado exitosamente!')
             return HttpResponseRedirect(self.get_success_url())
@@ -178,7 +174,7 @@ class MangaUpdateView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, UpdateView)
             self.object = form.save()
             arcs_formset.save()
             
-            # Misma lógica manual para Update
+            # Lógica manual para Update (Idéntica a Create)
             instances = chapters_formset.save(commit=False)
             for obj in instances:
                 obj.manga = self.object
@@ -189,17 +185,18 @@ class MangaUpdateView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, UpdateView)
             for i, chapter_form in enumerate(chapters_formset.forms):
                 if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
                     chapter_instance = chapter_form.instance
-                    files_key = f"{chapters_formset.prefix}-{i}-images"
-                    images_list = self.request.FILES.getlist(files_key)
-                    
-                    if images_list:
-                        start_page = chapter_instance.panels.count() + 1
-                        for idx, img in enumerate(images_list):
-                            Panel.objects.create(
-                                chapter=chapter_instance,
-                                image=img,
-                                page_number=start_page + idx
-                            )
+                    if chapter_instance.pk:
+                        files_key = f"{chapters_formset.prefix}-{i}-images"
+                        images_list = self.request.FILES.getlist(files_key)
+                        
+                        if images_list:
+                            start_page = chapter_instance.panels.count() + 1
+                            for idx, img in enumerate(images_list):
+                                Panel.objects.create(
+                                    chapter=chapter_instance,
+                                    image=img,
+                                    page_number=start_page + idx
+                                )
 
             messages.success(self.request, 'Manga actualizado correctamente.')
             return HttpResponseRedirect(self.get_success_url())

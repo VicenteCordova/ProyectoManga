@@ -2,9 +2,12 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import Manga, Chapter, Panel, Arc
 
-# Widget para permitir selección múltiple en el navegador
+# --- WIDGET OBLIGATORIO ---
+# Permite que el HTML tenga el atributo 'multiple' sin que Django se queje
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
+
+# --- FORMULARIOS ---
 
 class MangaForm(forms.ModelForm):
     class Meta:
@@ -27,7 +30,8 @@ class ArcForm(forms.ModelForm):
         }
 
 class ChapterForm(forms.ModelForm):
-    # Campo simple, delegamos el guardado a la vista
+    # Campo especial: required=False para que la validación estándar no bloquee
+    # La vista se encargará de procesar los archivos manualmente.
     images = forms.FileField(
         required=False,
         label="Páginas / Imágenes (Selecciona todas juntas)",
@@ -48,10 +52,12 @@ class ChapterForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Filtramos los arcos para mostrar solo los de este manga
         if self.instance and getattr(self.instance, 'manga', None):
              self.fields['arc'].queryset = Arc.objects.filter(manga=self.instance.manga)
 
-# Formsets
+# --- FORMSETS ---
+
 ArcFormSet = inlineformset_factory(
     Manga, Arc,
     form=ArcForm,

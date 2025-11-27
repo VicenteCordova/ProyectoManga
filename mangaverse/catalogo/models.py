@@ -1,72 +1,106 @@
 from django.db import models
 from django.utils.text import slugify
-from django.conf import settings  # Importar settings para usar el usuario
+from django.conf import settings
+from django.urls import reverse
 
 class Manga(models.Model):
-    # Nuevo campo: Dueño del manga
+    """
+    Representa una obra de manga.
+    Vinculada a un usuario (owner) para gestión de permisos.
+    """
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
         related_name='mangas',
-        null=True, blank=True  # Permitimos null temporalmente para la migración
+        verbose_name="Propietario"
     )
-    
-    titulo = models.CharField(max_length=200)
-    autor = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, help_text="Sinopsis")
-    portada = models.ImageField(upload_to='portadas/', blank=True, null=True)
-    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    titulo = models.CharField(max_length=200, verbose_name="Título")
+    autor = models.CharField(max_length=100, verbose_name="Autor")
+    descripcion = models.TextField(blank=True, verbose_name="Sinopsis", help_text="Breve descripción de la trama.")
+    portada = models.ImageField(upload_to='portadas/', blank=True, null=True, verbose_name="Portada Oficial")
+    slug = models.SlugField(max_length=255, unique=True, blank=True, help_text="Identificador único para URLs.")
+
+    class Meta:
+        verbose_name = "Manga"
+        verbose_name_plural = "Mangas"
+        ordering = ['titulo']
 
     def __str__(self):
         return self.titulo
 
     def save(self, *args, **kwargs):
+        """Genera slug automáticamente si no existe."""
         if not self.slug:
-            self.slug = slugify(self.titulo)
+            base_slug = slugify(self.titulo)
+            # Lógica simple de unicidad (podría mejorarse para alta concurrencia)
+            unique_slug = base_slug
+            num = 1
+            while Manga.objects.filter(slug=unique_slug).exclude(pk=self.pk).exists():
+                unique_slug = f"{base_slug}-{num}"
+                num += 1
+            self.slug = unique_slug
         super().save(*args, **kwargs)
 
-# NUEVO MODELO: ARCO
+    def get_absolute_url(self):
+        return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.slug})
+
+
 class Arc(models.Model):
+    """
+    Agrupa capítulos en arcos argumentales (Sagas).
+    Ej: 'Saga del Santuario', 'Arco de la Boda'.
+    """
     manga = models.ForeignKey(Manga, related_name='arcs', on_delete=models.CASCADE)
     title = models.CharField(max_length=255, verbose_name="Título del Arco")
-    order = models.PositiveIntegerField(default=1, verbose_name="Orden")
+    order = models.PositiveIntegerField(default=1, verbose_name="Orden de Lectura")
 
     class Meta:
         ordering = ['order']
-        unique_together = ('manga', 'title')
+        verbose_name = "Arco"
+        verbose_name_plural = "Arcos"
 
     def __str__(self):
         return f"{self.manga.titulo} - {self.title}"
 
+
 class Chapter(models.Model):
+    """
+    Representa un capítulo individual.
+    Puede pertenecer opcionalmente a un Arco.
+    """
     manga = models.ForeignKey(Manga, related_name='chapters', on_delete=models.CASCADE)
-    # Nuevo campo opcional: Arco
-    arc = models.ForeignKey(Arc, related_name='chapters', on_delete=models.SET_NULL, null=True, blank=True)
-    
-    title = models.CharField(max_length=255)
-    chapter_number = models.PositiveIntegerField()
+    arc = models.ForeignKey(Arc, related_name='chapters', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Arco")
+    title = models.CharField(max_length=255, verbose_name="Título del Capítulo")
+    chapter_number = models.PositiveIntegerField(verbose_name="Número")
     slug = models.SlugField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['chapter_number']
-        unique_together = ('manga', 'slug')
+        unique_together = ('manga', 'chapter_number') # Evita duplicados de número en el mismo manga
 
     def __str__(self):
-        return f"{self.manga.titulo} - {self.title}"
+        return f"Cap. {self.chapter_number}: {self.title}"
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(f"capitulo-{self.chapter_number}")
         super().save(*args, **kwargs)
 
+
 class Panel(models.Model):
+    """
+    Imagen individual (página) de un capítulo.
+    """
     chapter = models.ForeignKey(Chapter, related_name='panels', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='manga_panels/')
-    page_number = models.PositiveIntegerField(default=1)
+    page_number = models.PositiveIntegerField(verbose_name="Número de Página")
 
     class Meta:
         ordering = ['page_number']
 
     def get_upload_path(instance, filename):
+        # Organiza archivos en carpetas limpias: manga/capitulo/archivo
         return f'manga_panels/{instance.chapter.manga.slug}/{instance.chapter.slug}/{filename}'
+    
     image.upload_to = get_upload_path

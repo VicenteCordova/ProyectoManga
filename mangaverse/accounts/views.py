@@ -4,9 +4,12 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+
+# --- CORRECCIÓN IMPORTANTE ---
+# Importamos Manga desde 'catalogo.models', NO desde '.models'
 from catalogo.models import Manga
 
-# IMPORTANTE: Aquí importamos todos los formularios necesarios
+# Importamos los formularios de la app actual (accounts)
 from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
 
 def register(request):
@@ -28,6 +31,11 @@ def register(request):
 
 @login_required
 def profile(request):
+    # Aseguramos que el usuario tenga perfil (por si es un usuario antiguo)
+    if not hasattr(request.user, 'profile'):
+        from .models import Profile
+        Profile.objects.create(user=request.user)
+
     if request.method == 'POST':
         # Instanciamos los formularios con los datos POST
         u_form = UserUpdateForm(request.POST, instance=request.user)
@@ -44,7 +52,6 @@ def profile(request):
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
     # Obtenemos los favoritos para mostrarlos
-    # Usamos .all() si la relación many-to-many ya existe en el profile
     favoritos = request.user.profile.favorites.all()
 
     context = {
@@ -59,6 +66,12 @@ def profile(request):
 def add_favorite(request, manga_slug):
     """Vista que recibe una petición AJAX para agregar/quitar favorito"""
     manga = get_object_or_404(Manga, slug=manga_slug)
+    
+    # Verificación de seguridad por si el perfil no existe
+    if not hasattr(request.user, 'profile'):
+        from .models import Profile
+        Profile.objects.create(user=request.user)
+
     profile = request.user.profile
     
     if profile.favorites.filter(id=manga.id).exists():

@@ -1,11 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model
-from .models import Profile  # <--- ¡ESTA ES LA LÍNEA QUE FALTABA!}
+from .models import Profile
 
 User = get_user_model()
 
-# --- Tu formulario de registro original ---
+# --- Formulario de Registro ---
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -22,17 +22,13 @@ class RegisterForm(UserCreationForm):
             raise forms.ValidationError("Este correo ya está registrado.")
         return email
 
-# --- Nuevos formularios para el Perfil ---
-
-# accounts/forms.py (parte inferior del archivo)
-
+# --- Formularios de Perfil ---
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
 
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
-        # ESTO ES NUEVO: Le damos estilo a cada campo
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Usuario'}),
             'email': forms.EmailInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Email'}),
@@ -53,8 +49,7 @@ class ProfileUpdateForm(forms.ModelForm):
             'avatar': forms.FileInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
         }
 
-# accounts/forms.py
-
+# --- Formulario de Login Personalizado ---
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -65,7 +60,7 @@ class LoginForm(AuthenticationForm):
         self.fields['username'].widget.attrs.update({
             'class': base_class,
             'placeholder': 'Usuario',
-            'style': 'border-radius: 12px; padding: 1rem;' # Toque moderno
+            'style': 'border-radius: 12px; padding: 1rem;' 
         })
         self.fields['password'].widget.attrs.update({
             'class': base_class,
