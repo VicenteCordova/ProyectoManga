@@ -1,56 +1,204 @@
 {% extends 'base.html' %}
-{% block title %}{{ view.object|default:'Nuevo Manga' }}{% endblock %}
+{% load static %}
+
+{% block title %}{{ view.object.titulo|default:'Nuevo Manga' }} | Editor{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h1 class="h3 text-white mb-4">{{ view.object|default:'Nuevo Manga' }}</h1>
-
-  <form method="post" enctype="multipart/form-data" class="card bg-dark border-secondary p-4">
-    {% csrf_token %}
-    
-    <h4 class="text-primary mb-3">Información General</h4>
-    {{ form.as_p }}
-
-    <hr class="border-secondary my-4">
-
-    <h4 class="text-info mb-3">Arcos / Sagas</h4>
-    <p class="text-white-50 small">Define los arcos narrativos (Ej: "Saga de Introducción").</p>
-    
-    {{ arcs_formset.management_form }}
-    <div class="table-responsive mb-4">
-        <table class="table table-dark table-borderless align-middle">
-            {{ arcs_formset.as_table }}
-        </table>
-    </div>
-
-    {% if chapters_formset %}
-        <hr class="border-secondary my-4">
-        <h4 class="text-success mb-3">Capítulos</h4>
-        <p class="text-white-50 small">Sube capítulos y asígnalos a un Arco si corresponde.</p>
-        
-        {{ chapters_formset.management_form }}
-        <div class="accordion" id="chaptersAccordion">
-            {% for form in chapters_formset %}
-                <div class="accordion-item bg-dark border-secondary mb-2">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-dark text-white shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}">
-                            Capítulo #{{ forloop.counter }}
-                        </button>
-                    </h2>
-                    <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#chaptersAccordion">
-                        <div class="accordion-body">
-                            {{ form.as_p }}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+<div class="container py-5">
+  
+  <div class="row justify-content-center">
+    <div class="col-xl-10">
+      
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h1 class="h3 fw-bold text-white text-uppercase mb-1" style="font-family: 'Rajdhani', sans-serif; letter-spacing: 2px;">
+            {% if view.object %}
+              Editar <span class="text-gradient-cyan">{{ view.object.titulo }}</span>
+            {% else %}
+              Invocar <span class="text-gradient-cyan">Nuevo Manga</span>
+            {% endif %}
+          </h1>
+          <p class="text-secondary small mb-0">Define los metadatos principales de la obra.</p>
         </div>
-    {% endif %}
+      </div>
 
-    <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-brand-neon px-5" type="submit">Guardar Todo</button>
-        <a href="{% url 'catalogo:lista-mangas' %}" class="btn btn-outline-light">Cancelar</a>
+      <form method="post" enctype="multipart/form-data" class="card border-0 bg-transparent" novalidate>
+        {% csrf_token %}
+        
+        {% if form.errors %}
+          <div class="alert alert-danger bg-danger bg-opacity-10 border-0 text-danger mb-4">
+            <h6 class="fw-bold"><i class="bi bi-exclamation-triangle"></i> Atención:</h6>
+            <ul class="mb-0 small">
+              {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                  <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        
+        <div class="row g-4">
+          
+          <div class="col-lg-8">
+            <div class="p-4 p-md-5 rounded-4 shadow-lg position-relative overflow-hidden" 
+                 style="background: rgba(20, 20, 23, 0.95); border: 1px solid rgba(255,255,255,0.08);">
+              
+              <div class="position-absolute top-0 end-0 p-5 bg-primary opacity-10 rounded-circle blur-decoration"></div>
+
+              <div class="mb-4">
+                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Título de la Obra</label>
+                {{ form.titulo }}
+                {% if form.titulo.errors %}
+                  <div class="text-danger small mt-1">⚠️ {{ form.titulo.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Autor / Mangaka</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-dark border-secondary text-secondary">✒️</span>
+                  {{ form.autor }}
+                </div>
+                {% if form.autor.errors %}
+                  <div class="text-danger small mt-1">⚠️ {{ form.autor.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Género(s)</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-dark border-secondary text-secondary">🏷️</span>
+                  {{ form.genero }}
+                </div>
+                {% if form.genero.errors %}
+                  <div class="text-danger small mt-1">⚠️ {{ form.genero.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Sinopsis</label>
+                {{ form.descripcion }}
+                <div class="form-text text-white-50 opacity-50 small">Breve resumen para atrapar al lector.</div>
+                {% if form.descripcion.errors %}
+                  <div class="text-danger small mt-1">⚠️ {{ form.descripcion.errors.0 }}</div>
+                {% endif %}
+              </div>
+
+              <div class="d-flex gap-3 mt-5 pt-3 border-top border-white border-opacity-10">
+                <button type="submit" class="btn btn-brand-neon px-5 fw-bold shadow-neon hover-lift">
+                  {% if view.object %}💾 Guardar Cambios{% else %}✨ Crear Manga{% endif %}
+                </button>
+                <a href="{% if view.object %}{% url 'catalogo:manga-detail' view.object.slug %}{% else %}{% url 'catalogo:lista-mangas' %}{% endif %}" 
+                   class="btn btn-outline-secondary px-4 hover-lift">
+                  Cancelar
+                </a>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px; z-index: 1;">
+              
+              <label class="form-label text-white-50 small text-uppercase fw-bold ls-1 mb-2">Portada Oficial</label>
+              
+              <div class="card bg-dark border-secondary border-dashed border-2 position-relative overflow-hidden group-hover" 
+                   style="min-height: 450px; border-style: dashed !important; cursor: pointer;"
+                   onclick="document.getElementById('id_portada').click();">
+                
+                <input type="file" name="portada" class="d-none" accept="image/*" id="id_portada">
+
+                <img id="cover-preview" 
+                     src="{% if form.instance.portada %}{{ form.instance.portada.url }}{% else %}{% static 'images/sinfondo.png' %}{% endif %}" 
+                     class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 transition-opacity"
+                     style="{% if not form.instance.portada %}opacity: 0.3; filter: grayscale(100%);{% endif %}"
+                     alt="Portada Preview">
+
+                <div class="position-absolute top-50 start-50 translate-middle text-center w-100 p-3 pointer-events-none">
+                  <div class="mb-2 icon-upload transition-transform">
+                    <span class="fs-1">📂</span>
+                  </div>
+                  <h6 class="text-white fw-bold mb-1">Click para subir</h6>
+                  <p class="text-white-50 small mb-0">JPG, PNG (Max 5MB)</p>
+                </div>
+
+                <div class="position-absolute inset-0 bg-primary opacity-0 group-hover-opacity-10 transition-all"></div>
+              </div>
+
+              {% if form.portada.errors %}
+                <div class="text-danger small mt-2 text-center">{{ form.portada.errors.0 }}</div>
+              {% endif %}
+
+              <div class="mt-3 text-center">
+                <p class="small text-white-50 fst-italic">
+                  <span class="text-primary">*</span> Se recomienda formato vertical (2:3).
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </form>
+
     </div>
-  </form>
+  </div>
 </div>
+
+<style>
+  /* Inputs modernos */
+  input[type="text"], textarea {
+    background-color: rgba(0,0,0,0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    border-radius: 8px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+  }
+  input[type="text"]:focus, textarea:focus {
+    background-color: rgba(0,0,0,0.5) !important;
+    border-color: var(--mv-primary) !important;
+    box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.1);
+  }
+
+  /* Utilidades */
+  .ls-1 { letter-spacing: 1px; }
+  .blur-decoration { filter: blur(80px); width: 200px; height: 200px; z-index: 0; }
+  
+  /* Animaciones */
+  .group-hover:hover { border-color: var(--mv-primary) !important; }
+  .group-hover:hover .icon-upload { transform: translateY(-5px); }
+  .group-hover-opacity-10:hover { opacity: 0.1; }
+  .transition-all { transition: all 0.3s ease; }
+  .pointer-events-none { pointer-events: none; }
+  
+  /* Text Gradient */
+  .text-gradient-cyan {
+    background: linear-gradient(to right, #00e5ff, #7c4dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+</style>
+
+<script>
+  // Script para previsualizar la imagen al instante
+  const fileInput = document.getElementById('id_portada');
+  if(fileInput){
+    fileInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.getElementById('cover-preview');
+          img.src = e.target.result;
+          img.style.opacity = '1';
+          img.style.filter = 'none';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+</script>
+
 {% endblock %}

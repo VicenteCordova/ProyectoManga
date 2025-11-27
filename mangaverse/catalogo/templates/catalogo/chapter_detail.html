@@ -6,27 +6,56 @@
 {% block content %}
 <div class="container py-4 text-center">
   
-  <div class="mb-4 d-flex justify-content-between align-items-center">
-    <a href="{% url 'catalogo:manga-detail' chapter.manga.slug %}" class="btn btn-outline-secondary btn-sm">
+  <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <a href="{% url 'catalogo:manga-detail' chapter.manga.slug %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
       ← Volver al Manga
     </a>
-    <h2 class="h5 text-white mb-0">{{ chapter.manga.titulo }} <span class="text-primary">#{{ chapter.chapter_number }}</span></h2>
-    <div style="width: 100px;"></div> </div>
+    <div class="text-center">
+      <h2 class="h6 text-secondary text-uppercase ls-1 mb-0">{{ chapter.manga.titulo }}</h2>
+      <h1 class="h5 text-white fw-bold mb-0">Capítulo {{ chapter.chapter_number }}</h1>
+    </div>
+    <div style="width: 80px;" class="d-none d-md-block"></div> </div>
 
-  <div class="mx-auto bg-black rounded-3 shadow-lg overflow-hidden" style="max-width: 800px; min-height: 500px;">
+  <div class="mx-auto bg-black rounded-3 shadow-lg overflow-hidden border border-secondary border-opacity-25" style="max-width: 900px; min-height: 600px;">
     {% if panels %}
       {% for panel in panels %}
         <img src="{{ panel.image.url }}" class="img-fluid d-block w-100" alt="Página {{ panel.page_number }}" loading="lazy">
       {% endfor %}
     {% else %}
-      <div class="py-5 text-white-50">Este capítulo no tiene páginas cargadas.</div>
+      <div class="py-5 text-white-50 d-flex flex-column align-items-center justify-content-center h-100">
+        <span class="fs-1 mb-3">📄</span>
+        <p>Este capítulo no tiene páginas cargadas.</p>
+        {% if user.is_superuser or user == chapter.manga.owner %}
+           <a href="{% url 'catalogo:manga-update' chapter.manga.slug %}" class="btn btn-sm btn-primary">Subir páginas</a>
+        {% endif %}
+      </div>
     {% endif %}
   </div>
 
-  <div class="mt-5">
-    <a href="{% url 'catalogo:manga-detail' chapter.manga.slug %}" class="btn btn-secondary rounded-pill px-4">
-      Fin del Capítulo
-    </a>
+  <div class="mt-5 d-flex justify-content-center gap-3">
+    {% if prev_chapter %}
+      <a href="{% url 'catalogo:chapter-detail' chapter.manga.slug prev_chapter.slug %}" class="btn btn-outline-light rounded-pill px-4 hover-lift">
+        ← Anterior
+      </a>
+    {% else %}
+      <button class="btn btn-outline-secondary rounded-pill px-4 opacity-50" disabled>← Anterior</button>
+    {% endif %}
+
+    {% if next_chapter %}
+      <a href="{% url 'catalogo:chapter-detail' chapter.manga.slug next_chapter.slug %}" class="btn btn-brand-neon rounded-pill px-5 fw-bold text-dark shadow-neon hover-lift">
+        Siguiente →
+      </a>
+    {% else %}
+      <a href="{% url 'catalogo:manga-detail' chapter.manga.slug %}" class="btn btn-secondary rounded-pill px-5 fw-bold hover-lift">
+        Finalizar
+      </a>
+    {% endif %}
   </div>
+
 </div>
+
+<style>
+  .hover-lift:hover { transform: translateY(-3px); transition: transform 0.2s; }
+  .ls-1 { letter-spacing: 1px; }
+</style>
 {% endblock %}

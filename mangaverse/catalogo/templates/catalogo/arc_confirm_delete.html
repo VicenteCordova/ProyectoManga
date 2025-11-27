@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar Arco{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card bg-dark border-secondary shadow-lg">
+        <div class="card-body p-4 text-center">
+          <div class="mb-4 text-danger display-1">⚠️</div>
+          
+          <h2 class="h4 text-white mb-3">¿Eliminar Arco Narrativo?</h2>
+          
+          <p class="text-white-50">
+            Estás a punto de borrar el arco:
+            <br>
+            <strong class="text-white fs-5">{{ object.title }}</strong>
+          </p>
+          
+          <div class="alert alert-danger bg-danger bg-opacity-10 border-0 text-danger small">
+            Al eliminar este arco, los capítulos asociados podrían perder su agrupación.
+          </div>
+          
+          <form method="post" class="d-flex gap-2 justify-content-center mt-4">
+            {% csrf_token %}
+            
+            <a href="{% url 'catalogo:manga-detail' object.manga.slug %}" class="btn btn-outline-light px-4">
+              Cancelar
+            </a>
+            
+            <button type="submit" class="btn btn-danger px-4 fw-bold">
+              Sí, Eliminar
+            </button>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

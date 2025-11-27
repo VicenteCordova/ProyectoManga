@@ -130,3 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Aumentar el límite de archivos subidos por request (Default es 100)
+# Ponle 1000 o más, dependiendo de qué tan largos sean tus capítulos.
+DATA_UPLOAD_MAX_NUMBER_FILES = 1000

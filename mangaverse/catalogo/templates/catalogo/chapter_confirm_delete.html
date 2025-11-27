@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar Capítulo{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card bg-dark border-secondary shadow-lg">
+        <div class="card-body p-4 text-center">
+          <div class="mb-4 text-danger display-1">⚠️</div>
+          <h2 class="h4 text-white mb-3">¿Eliminar Capítulo?</h2>
+          <p class="text-white-50">
+            Estás a punto de borrar <strong>{{ object.title }}</strong> del manga <em>{{ object.manga.titulo }}</em>.
+            <br>
+            Esta acción eliminará también todas las imágenes asociadas y <strong>no se puede deshacer</strong>.
+          </p>
+          
+          <form method="post" class="d-flex gap-2 justify-content-center mt-4">
+            {% csrf_token %}
+            <a href="{% url 'catalogo:manga-detail' object.manga.slug %}" class="btn btn-outline-light px-4">Cancelar</a>
+            <button type="submit" class="btn btn-danger px-4 fw-bold">Sí, Eliminar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

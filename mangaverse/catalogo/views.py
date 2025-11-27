@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
@@ -7,7 +8,13 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from .models import Manga, Chapter, Panel, Arc
-from .forms import MangaForm, ChapterFormSet, ArcFormSet
+from .forms import MangaForm, ChapterForm
+
+# Importamos la utilidad de procesamiento de archivos
+try:
+    from .utils import process_chapter_files
+except ImportError:
+    def process_chapter_files(*args, **kwargs): pass
 
 # --------------------------
 # VISTAS PÚBLICAS
@@ -61,7 +68,8 @@ def search_suggest(request):
 def manga_detail_view(request, manga_slug):
     manga = get_object_or_404(Manga, slug=manga_slug)
     chapters = manga.chapters.all().order_by('chapter_number')
-    return render(request, 'catalogo/manga_detail.html', {'manga': manga, 'chapters': chapters})
+    arcs = manga.arcs.all().order_by('order')
+    return render(request, 'catalogo/manga_detail.html', {'manga': manga, 'chapters': chapters, 'arcs': arcs})
 
 def chapter_detail_view(request, manga_slug, chapter_slug):
     chapter = get_object_or_404(Chapter, manga__slug=manga_slug, slug=chapter_slug)
@@ -75,7 +83,13 @@ def chapter_detail_view(request, manga_slug, chapter_slug):
 class OwnerOrAdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         obj = self.get_object()
+        if isinstance(obj, Chapter):
+            return self.request.user == obj.manga.owner or self.request.user.is_superuser
+        if isinstance(obj, Arc): # Seguridad extra para Arcos
+            return self.request.user == obj.manga.owner or self.request.user.is_superuser
         return self.request.user == obj.owner or self.request.user.is_superuser
+
+# --- MANGA CRUD ---
 
 class MangaCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Manga
@@ -83,67 +97,11 @@ class MangaCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     template_name = 'catalogo/manga_form.html'
     permission_required = 'catalogo.add_manga'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.method == 'POST':
-            context['arcs_formset'] = ArcFormSet(self.request.POST, prefix='arcs')
-            # PASAMOS FILES AL FORMSET
-            context['chapters_formset'] = ChapterFormSet(self.request.POST, self.request.FILES, prefix='chapters')
-        else:
-            context['arcs_formset'] = ArcFormSet(prefix='arcs')
-            context['chapters_formset'] = ChapterFormSet(prefix='chapters')
-        return context
-
     def form_valid(self, form):
-        context = self.get_context_data()
-        arcs_formset = context['arcs_formset']
-        chapters_formset = context['chapters_formset']
-
-        if form.is_valid() and arcs_formset.is_valid() and chapters_formset.is_valid():
-            # 1. Guardar Manga
-            self.object = form.save(commit=False)
-            self.object.owner = self.request.user
-            self.object.save()
-            
-            # 2. Guardar Arcos
-            arcs_formset.instance = self.object
-            arcs_formset.save()
-
-            # 3. Guardar Capítulos y PROCESAR IMÁGENES MANUALMENTE
-            instances = chapters_formset.save(commit=False)
-            for obj in instances:
-                obj.manga = self.object
-                obj.save()
-            
-            # Borrados
-            for obj in chapters_formset.deleted_objects:
-                obj.delete()
-
-            # LÓGICA DE SUBIDA MÚLTIPLE
-            for i, chapter_form in enumerate(chapters_formset.forms):
-                # Verificamos que el form no esté marcado para borrar y tenga datos
-                if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
-                    chapter_instance = chapter_form.instance
-                    
-                    # Si el capítulo se guardó correctamente, buscamos sus archivos
-                    if chapter_instance.pk:
-                        # Reconstruimos el nombre del input: chapters-0-images
-                        files_key = f"{chapters_formset.prefix}-{i}-images"
-                        images_list = self.request.FILES.getlist(files_key)
-                        
-                        if images_list:
-                            start_page = chapter_instance.panels.count() + 1
-                            for idx, img in enumerate(images_list):
-                                Panel.objects.create(
-                                    chapter=chapter_instance,
-                                    image=img,
-                                    page_number=start_page + idx
-                                )
-
-            messages.success(self.request, '¡Manga creado exitosamente!')
-            return HttpResponseRedirect(self.get_success_url())
-
-        return self.render_to_response(self.get_context_data(form=form))
+        form.instance.owner = self.request.user
+        response = super().form_valid(form)
+        messages.success(self.request, "¡Manga creado! Ahora puedes agregar capítulos y arcos.")
+        return response
 
     def get_success_url(self):
         return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.slug})
@@ -155,57 +113,20 @@ class MangaUpdateView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, UpdateView)
     slug_field = 'slug'
     slug_url_kwarg = 'manga_slug'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if self.request.method == 'POST':
-            context['arcs_formset'] = ArcFormSet(self.request.POST, instance=self.object, prefix='arcs')
-            context['chapters_formset'] = ChapterFormSet(self.request.POST, self.request.FILES, instance=self.object, prefix='chapters')
-        else:
-            context['arcs_formset'] = ArcFormSet(instance=self.object, prefix='arcs')
-            context['chapters_formset'] = ChapterFormSet(instance=self.object, prefix='chapters')
-        return context
-
     def form_valid(self, form):
-        context = self.get_context_data()
-        arcs_formset = context['arcs_formset']
-        chapters_formset = context['chapters_formset']
+        # Eliminamos la lógica manual de archivos.
+        # Al usar UpdateView, form.save() guarda automáticamente los archivos
+        # si el HTML tiene enctype="multipart/form-data".
+        messages.success(self.request, '¡Manga actualizado correctamente!')
+        return super().form_valid(form)
 
-        if form.is_valid() and arcs_formset.is_valid() and chapters_formset.is_valid():
-            self.object = form.save()
-            arcs_formset.save()
-            
-            # Lógica manual para Update (Idéntica a Create)
-            instances = chapters_formset.save(commit=False)
-            for obj in instances:
-                obj.manga = self.object
-                obj.save()
-            for obj in chapters_formset.deleted_objects:
-                obj.delete()
-
-            for i, chapter_form in enumerate(chapters_formset.forms):
-                if chapter_form.cleaned_data and not chapter_form.cleaned_data.get('DELETE'):
-                    chapter_instance = chapter_form.instance
-                    if chapter_instance.pk:
-                        files_key = f"{chapters_formset.prefix}-{i}-images"
-                        images_list = self.request.FILES.getlist(files_key)
-                        
-                        if images_list:
-                            start_page = chapter_instance.panels.count() + 1
-                            for idx, img in enumerate(images_list):
-                                Panel.objects.create(
-                                    chapter=chapter_instance,
-                                    image=img,
-                                    page_number=start_page + idx
-                                )
-
-            messages.success(self.request, 'Manga actualizado correctamente.')
-            return HttpResponseRedirect(self.get_success_url())
-        
-        return self.render_to_response(self.get_context_data(form=form))
+    def form_invalid(self, form):
+        # Agregamos esto para depurar: Si falla, avisa al usuario.
+        messages.error(self.request, 'Error al actualizar. Revisa los campos marcados en rojo.')
+        return super().form_invalid(form)
 
     def get_success_url(self):
         return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.slug})
-
 class MangaDeleteView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, DeleteView):
     model = Manga
     template_name = 'catalogo/manga_confirm_delete.html'
@@ -214,5 +135,106 @@ class MangaDeleteView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, DeleteView)
     success_url = reverse_lazy('catalogo:lista-mangas')
 
     def delete(self, request, *args, **kwargs):
-        messages.success(self.request, 'Manga eliminado.')
+        messages.success(self.request, 'Manga eliminado correctamente.')
         return super().delete(request, *args, **kwargs)
+
+# --- CAPÍTULO DELETE ---
+
+class ChapterDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Chapter
+    template_name = 'catalogo/chapter_confirm_delete.html'
+    
+    def get_object(self, queryset=None):
+        return get_object_or_404(Chapter, manga__slug=self.kwargs['manga_slug'], slug=self.kwargs['chapter_slug'])
+
+    def test_func(self):
+        chapter = self.get_object()
+        return self.request.user == chapter.manga.owner or self.request.user.is_superuser
+
+    def get_success_url(self):
+        messages.success(self.request, 'Capítulo eliminado.')
+        return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.manga.slug})
+
+# --- ARCO CRUD (Aquí estaba el problema) ---
+
+class ArcUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Arc
+    fields = ['title', 'order']
+    template_name = 'catalogo/arc_form_modal.html' # Si no usas modal para editar, define un template simple
+
+    def test_func(self):
+        arc = self.get_object()
+        return self.request.user == arc.manga.owner or self.request.user.is_superuser
+
+    def get_success_url(self):
+        messages.success(self.request, 'Arco actualizado.')
+        return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.manga.slug})
+
+class ArcDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Arc
+    # --- CORRECCIÓN CRÍTICA ---
+    # Usamos el template específico para Arcos, NO el de Manga
+    template_name = 'catalogo/arc_confirm_delete.html' 
+
+    def test_func(self):
+        arc = self.get_object()
+        return self.request.user == arc.manga.owner or self.request.user.is_superuser
+
+    def get_success_url(self):
+        messages.success(self.request, 'Arco eliminado.')
+        return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.manga.slug})
+
+# --------------------------
+# VISTAS DE GESTIÓN (Funciones)
+# --------------------------
+
+@login_required
+def chapter_create_upload(request, manga_slug):
+    manga = get_object_or_404(Manga, slug=manga_slug)
+    
+    if request.user != manga.owner and not request.user.is_superuser:
+        messages.error(request, "No tienes permiso.")
+        return redirect('catalogo:manga-detail', manga_slug=manga.slug)
+
+    if request.method == 'POST':
+        # CASO A: Dropzone
+        if 'file' in request.FILES:
+            chapter_id = request.POST.get('chapter_id')
+            if not chapter_id: return JsonResponse({'error': 'Falta ID'}, status=400)
+            chapter = get_object_or_404(Chapter, id=chapter_id, manga=manga)
+            try:
+                process_chapter_files(chapter, [request.FILES['file']])
+                return JsonResponse({'status': 'success'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+        # CASO B: Formulario
+        form = ChapterForm(request.POST)
+        form.fields['arc'].queryset = Arc.objects.filter(manga=manga)
+        if form.is_valid():
+            chapter = form.save(commit=False)
+            chapter.manga = manga
+            chapter.save()
+            return JsonResponse({'status': 'created', 'chapter_id': chapter.id, 'redirect_url': reverse('catalogo:chapter-detail', args=[manga.slug, chapter.slug])})
+        else:
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    else:
+        form = ChapterForm()
+        form.fields['arc'].queryset = Arc.objects.filter(manga=manga)
+
+    return render(request, 'catalogo/chapter_create.html', {'form': form, 'manga': manga})
+
+@login_required
+def arc_create_view(request, manga_slug):
+    manga = get_object_or_404(Manga, slug=manga_slug)
+    if request.user != manga.owner and not request.user.is_superuser:
+        return redirect('catalogo:manga-detail', manga_slug=manga.slug)
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        if title:
+            last_order = Arc.objects.filter(manga=manga).count()
+            Arc.objects.create(manga=manga, title=title, order=last_order + 1)
+            messages.success(request, f"Arco '{title}' creado.")
+    
+    return redirect(request.META.get('HTTP_REFERER') or reverse('catalogo:manga-detail', args=[manga.slug]))

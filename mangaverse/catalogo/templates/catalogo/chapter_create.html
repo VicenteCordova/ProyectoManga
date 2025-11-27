@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subir Capítulo | {{ manga.titulo }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+<style>
+    .dropzone {
+        border: 2px dashed var(--mv-primary);
+        background: rgba(0,0,0,0.2);
+        color: white;
+        border-radius: 10px;
+        min-height: 200px;
+    }
+    .dropzone .dz-preview .dz-image { border-radius: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="card bg-dark border-secondary shadow-lg">
+                <div class="card-body p-4">
+                    <h2 class="h4 text-white mb-4">Nuevo Capítulo para <span class="text-primary">{{ manga.titulo }}</span></h2>
+
+                    <form id="chapter-data-form" method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="text-secondary small">Título del Capítulo</label>
+                                {{ form.title }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-secondary small">Número</label>
+                                {{ form.chapter_number }}
+                            </div>
+                            <div class="col-12">
+                                <label class="text-secondary small">Arco (Opcional)</label>
+                                <div class="input-group">
+                                    {{ form.arc }}
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#arcModal">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <hr class="border-secondary my-4">
+
+                    <div id="upload-area" style="display:none;">
+                        <h5 class="text-white mb-3">Imágenes o PDF del Capítulo</h5>
+                        <p class="text-white-50 small">Arrastra tus archivos aquí. Soportamos JPG, PNG y <strong>PDF</strong>.</p>
+                        
+                        <form action="{{ request.path }}" class="dropzone" id="my-dropzone">
+                            {% csrf_token %}
+                            <input type="hidden" name="chapter_id" id="dz-chapter-id">
+                        </form>
+
+                        <div class="d-grid mt-4">
+                            <a href="" id="finish-btn" class="btn btn-success fw-bold">Finalizar y Ver Capítulo</a>
+                        </div>
+                    </div>
+
+                    <div id="initial-actions" class="d-grid mt-4">
+                        <button type="button" id="save-chapter-btn" class="btn btn-brand-neon">Siguiente: Subir Páginas</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="arcModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form action="{% url 'catalogo:arc-create' manga.slug %}" method="post" class="modal-content bg-dark text-white border-secondary">
+            {% csrf_token %}
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Nuevo Arco</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" name="title" class="form-control bg-black text-white" placeholder="Nombre del Arco (ej: Saga de Namek)" required>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<script>
+    Dropzone.autoDiscover = false;
+
+    const myDropzone = new Dropzone("#my-dropzone", {
+        autoProcessQueue: true,
+        paramName: "file",
+        maxFilesize: 50, // MB (Para soportar PDFs grandes)
+        acceptedFiles: "image/*,application/pdf",
+        parallelUploads: 5,
+        dictDefaultMessage: "Arrastra imágenes o un PDF aquí",
+    });
+
+    // Lógica para guardar el capítulo primero mediante AJAX
+    document.getElementById('save-chapter-btn').addEventListener('click', function() {
+        const form = document.getElementById('chapter-data-form');
+        const formData = new FormData(form);
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'created') {
+                // 1. Ocultar formulario datos, mostrar Dropzone
+                document.getElementById('chapter-data-form').style.opacity = '0.5';
+                document.getElementById('chapter-data-form').style.pointerEvents = 'none';
+                document.getElementById('initial-actions').style.display = 'none';
+                
+                document.getElementById('upload-area').style.display = 'block';
+                
+                // 2. Asignar ID al dropzone
+                document.getElementById('dz-chapter-id').value = data.chapter_id;
+                
+                // 3. Configurar botón finalizar
+                document.getElementById('finish-btn').href = data.redirect_url;
+            } else {
+                alert("Error en el formulario: " + JSON.stringify(data.errors));
+            }
+        });
+    });
+</script>
+{% endblock %}
