@@ -4,7 +4,8 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: #3a3a3b;            /* color base por si no carga la imagen */
+  /* CORRECCIÓN: Color oscuro que combina con el tema, no gris */
+  background: #09090b;            
   overflow: hidden;                /* sin scroll en el iframe del fondo */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

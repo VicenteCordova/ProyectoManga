@@ -12,14 +12,16 @@ class MangaForm(forms.ModelForm):
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
             'autor': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
-            # --- AGREGAMOS ESTO ---
-            'genero': forms.TextInput(attrs={'class': 'form-control bg-dark text-white border-secondary', 'placeholder': 'Ej: Shonen, Acción, Aventura'}), 
-            # ----------------------
+            
+            # CAMBIO AQUÍ: Usamos forms.Select con clase 'form-select'
+            'genero': forms.Select(attrs={
+                'class': 'form-select bg-dark text-white border-secondary', 
+                'style': 'cursor: pointer;'
+            }),
+            
             'descripcion': forms.Textarea(attrs={'class': 'form-control bg-dark text-white border-secondary', 'rows': 3}),
-            # Quitamos 'portada' de aquí porque en el template lo pusimos manual, pero no hace daño dejarlo.
-        
+            'portada': forms.FileInput(attrs={'class': 'form-control bg-dark text-white border-secondary'}),
         }
-
 class ArcForm(forms.ModelForm):
     class Meta:
         model = Arc

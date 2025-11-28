@@ -28,7 +28,8 @@
 
 /* APLICACIÓN GLOBAL */
 body {
-  background-color: var(--mv-bg-main);
+  /* CORRECCIÓN CRÍTICA: Transparente para ver el fondo animado */
+  background-color: transparent; 
   color: var(--mv-text-high);
   font-family: 'Inter', system-ui, sans-serif; /* Tipografía limpia */
 }
@@ -37,8 +38,6 @@ html, body { height:100%; }
 
 body {
   min-height: 100vh;
-  /* color: var(--text);  <-- Eliminado para usar la variable del sistema nuevo */
-  /* background: var(--brand-bg); <-- Eliminado */
 }
 
 .page-wrap {
@@ -69,16 +68,17 @@ body {
   position: fixed;
   inset: 0;
   z-index: -2;
+  /* CORRECCIÓN: Opacidad reducida (.65) para que se vean las estrellas */
   background:
     radial-gradient(1200px 600px at 50% 20%, rgba(0,0,0,.25), rgba(0,0,0,.65)),
-    linear-gradient(to bottom, rgba(10,10,25,.35), rgba(10,10,25,.85));
+    linear-gradient(to bottom, rgba(10,10,25,.35), rgba(10,10,25,.65));
   backdrop-filter: blur(1px);
 }
 
 /* ===== Navbar / botones ===== */
 .navbar-brand { letter-spacing: .3px; }
 .btn-brand {
-  background: var(--mv-primary); /* Actualizado a variable */
+  background: var(--mv-primary);
   color: #fff;
   border: none;
 }
