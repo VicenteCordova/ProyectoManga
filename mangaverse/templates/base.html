@@ -11,26 +11,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
 
   {% block extra_head %}{% endblock %}
 </head>
-<body>
+
+<body class="d-flex flex-column min-vh-100" style="padding-bottom: 100px;">
 
   <div class="bg-layer">
     <iframe class="bg-iframe" src="{% static 'fondo.html' %}" title="Fondo" loading="lazy"></iframe>
   </div>
   <div class="bg-overlay"></div>
 
-  <div class="page-wrap">
+  <div class="page-wrap d-flex flex-column flex-fill">
     
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background: rgba(9,9,11,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--mv-border);">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top mv-navbar">
       <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'catalogo:home' %}">
-          <img src="{% static 'images/sinfondo.png' %}" width="32" height="32" alt="Logo">
-          <span style="font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px;">MANGAVERSE</span>
+        
+        <a class="navbar-brand d-flex align-items-center gap-2 me-4" href="{% url 'catalogo:home' %}">
+          <img src="{% static 'images/sinfondo.png' %}" width="32" height="32" alt="Logo" class="drop-shadow-sm">
+          <span class="brand-text">MANGA<span class="text-gradient-cyan">VERSE</span></span>
         </a>
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mvNav">
@@ -38,87 +41,106 @@
         </button>
 
         <div class="collapse navbar-collapse" id="mvNav">
-          <ul class="navbar-nav me-auto ms-3 gap-3">
-            <li class="nav-item"><a class="nav-link fw-medium text-uppercase fs-7" href="{% url 'catalogo:lista-mangas' %}">Catálogo</a></li>
-            <li class="nav-item"><a class="nav-link fw-medium text-uppercase fs-7" href="{% url 'catalogo:nosotros' %}">Misión</a></li>
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'catalogo:lista-mangas' %}">Catálogo</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'catalogo:nosotros' %}">Misión</a>
+            </li>
           </ul>
 
-          <form class="d-none d-lg-flex position-relative me-3" role="search" 
-                method="get" action="{% url 'catalogo:search' %}" 
-                id="navbar-search-form" autocomplete="off">
-            
+          <form class="d-flex position-relative me-3 search-form" role="search" method="get" action="{% url 'catalogo:search' %}" autocomplete="off">
             <div class="input-group input-group-sm">
-              <input type="search" 
-                     name="q" 
-                     id="navbar-search-input" 
-                     class="form-control bg-dark border-secondary text-white" 
-                     placeholder="Buscar manga..." 
-                     aria-label="Buscar" 
-                     value="{{ request.GET.q|default:'' }}"
-                     autocomplete="off">
-              <button class="btn btn-outline-secondary" type="submit">🔍</button>
+              <span class="input-group-text bg-transparent border-end-0 border-secondary ps-3 text-secondary">
+                <i class="bi bi-search"></i>
+              </span>
+              <input type="search" name="q" id="navbar-search-input" class="form-control bg-transparent border-start-0 border-secondary text-white shadow-none" placeholder="Buscar..." value="{{ request.GET.q|default:'' }}">
             </div>
-
-            <div id="live-results" 
-                 class="list-group position-absolute w-100 shadow-lg mt-1 overflow-hidden" 
-                 style="top: 100%; left: 0; z-index: 1050; display: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 0.5rem;">
-            </div>
+            <div id="live-results" class="list-group position-absolute w-100 shadow-neon mt-2 rounded-3 overflow-hidden" style="top: 100%; left: 0; z-index: 1050; display: none; border: 1px solid rgba(124,77,255,0.3);"></div>
           </form>
 
-          <ul class="navbar-nav gap-2 align-items-center">
+          <ul class="navbar-nav gap-2 align-items-center mt-3 mt-lg-0">
             {% if user.is_authenticated %}
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
-                  {% if user.profile.avatar %}
-                    <img src="{{ user.profile.avatar.url }}" class="rounded-circle border border-secondary" width="30" height="30" style="object-fit:cover;">
-                  {% else %}
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center border border-dark" style="width:30px; height:30px;">
-                      {{ user.username|slice:":1"|upper }}
-                    </div>
-                  {% endif %}
-                  <span class="small fw-bold font-monospace">{{ user.username }}</span>
+                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 user-pill ps-1 pe-3 py-1" href="#" data-bs-toggle="dropdown">
+                  <div class="rounded-circle overflow-hidden border border-secondary" style="width: 28px; height: 28px;">
+                    {% if user.profile.avatar %}
+                      <img src="{{ user.profile.avatar.url }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                      <img src="{% static 'images/sinfondo.png' %}" class="w-100 h-100 p-1 opacity-50 bg-dark">
+                    {% endif %}
+                  </div>
+                  <span class="small fw-bold text-white">{{ user.username }}</span>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary shadow-lg mt-2">
-                  <li><a class="dropdown-item text-white-50" href="{% url 'accounts:profile' %}">👤 Mi Perfil</a></li>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary shadow-lg mt-2 p-2">
+                  <li><a class="dropdown-item rounded-2 text-white-50 hover-text-white" href="{% url 'accounts:profile' %}">👤 Mi Base</a></li>
+                  {% if user.is_superuser %}
+                    <li><a class="dropdown-item rounded-2 text-info hover-text-white" href="/admin/">🛡️ Admin Django</a></li>
+                  {% endif %}
                   <li><hr class="dropdown-divider bg-secondary opacity-25"></li>
                   <li>
                     <form action="{% url 'accounts:logout' %}" method="post" class="d-inline w-100">
                       {% csrf_token %}
-                      <button type="submit" class="dropdown-item text-danger w-100 text-start">🚪 Cerrar Sesión</button>
+                      <button type="submit" class="dropdown-item rounded-2 text-danger hover-bg-danger">🛑 Cerrar Sesión</button>
                     </form>
                   </li>
                 </ul>
               </li>
             {% else %}
-              <li class="nav-item"><a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold">Ingresar</a></li>
-              <li class="nav-item"><a href="{% url 'accounts:register' %}" class="btn btn-sm btn-brand-neon rounded-pill px-3 text-dark fw-bold">Registro</a></li>
+              <li class="nav-item">
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold">Ingresar</a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-brand-neon rounded-pill px-3 fw-bold shadow-neon hover-lift">REGISTRO</a>
+              </li>
             {% endif %}
           </ul>
         </div>
       </div>
     </nav>
 
-    <main class="flex-fill position-relative" style="margin-top: 80px;">
+    <main class="flex-fill position-relative pt-nav fade-in-up">
       {% if messages %}
-        <div class="container position-absolute top-0 start-50 translate-middle-x mt-3" style="z-index: 1100; pointer-events: none;">
+        <div class="toast-container position-fixed top-0 end-0 p-3 mt-5 pt-4" style="z-index: 2000;">
           {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-lg border-0 text-white" role="alert" 
-                 style="pointer-events: auto; backdrop-filter: blur(10px); background-color: {% if message.tags == 'success' %}rgba(25, 135, 84, 0.9){% else %}rgba(220, 53, 69, 0.9){% endif %};">
-              {{ message }}
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            <div class="toast show align-items-center text-white bg-dark border-0 shadow-lg mb-2" role="alert" style="border-left: 4px solid {% if message.tags == 'success' %}#00e5ff{% else %}#ff2e63{% endif %} !important;">
+              <div class="d-flex">
+                <div class="toast-body small">{{ message }}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+              </div>
             </div>
           {% endfor %}
         </div>
       {% endif %}
-
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="border-top border-white border-opacity-10 py-4 mt-auto bg-black text-center text-white-50 small">
-      <div class="container">
-        <p class="mb-0">© 2025 MangaVerse. Hecho por fans para fans.</p>
+    <footer class="mv-footer fixed-bottom border-top border-white border-opacity-10">
+      <div class="container py-3"> <div class="row align-items-center">
+          
+          <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2">
+              <img src="{% static 'images/sinfondo.png' %}" width="24" class="opacity-75 drop-shadow-sm">
+              <p class="mb-0 text-white-50" style="font-size: 0.85rem;"> © 2025 <span class="text-white fw-bold">MangaVerse</span>. Hecho por Guild CloudCode.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6 text-center text-md-end">
+            <div class="d-flex justify-content-center justify-content-md-end gap-3">
+              <a href="#" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
+              <a href="#" class="social-link" title="Discord"><i class="bi bi-discord"></i></a>
+              <a href="#" class="social-link" title="Twitter"><i class="bi bi-twitter-x"></i></a>
+            </div>
+          </div>
+
+        </div>
       </div>
+      
+     
     </footer>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -126,88 +148,95 @@
   <script>
   (function(){
     "use strict";
-
     const input = document.getElementById('navbar-search-input');
     const resultsBox = document.getElementById('live-results');
-    const form = document.getElementById('navbar-search-form');
     let timeout = null;
-
-    function hideResults() {
-      resultsBox.style.display = 'none';
-      resultsBox.innerHTML = '';
-    }
-
     if(input){
+      input.parentElement.addEventListener('click', () => input.focus());
+      input.addEventListener('focus', () => {
+        input.parentElement.classList.add('border-primary', 'shadow-neon-sm');
+        input.parentElement.classList.remove('border-secondary');
+      });
+      input.addEventListener('blur', () => {
+        input.parentElement.classList.remove('border-primary', 'shadow-neon-sm');
+        input.parentElement.classList.add('border-secondary');
+        setTimeout(() => resultsBox.style.display = 'none', 200);
+      });
       input.addEventListener('input', function() {
         const query = this.value.trim();
         clearTimeout(timeout);
-
-        if (query.length < 2) {
-          hideResults();
-          return;
-        }
-
-        // Debounce de 300ms
+        if (query.length < 2) { resultsBox.style.display = 'none'; return; }
         timeout = setTimeout(() => {
           resultsBox.style.display = 'block';
-          resultsBox.innerHTML = `
-            <div class="list-group-item bg-dark text-secondary border-0 p-3">
-              <span class="spinner-border spinner-border-sm me-2"></span> Buscando...
-            </div>`;
-
-          fetch(`{% url 'catalogo:search-suggest' %}?q=${encodeURIComponent(query)}`)
-            .then(res => res.json())
-            .then(data => {
+          resultsBox.innerHTML = `<div class="p-2 text-white-50 bg-black small"><span class="spinner-border spinner-border-sm me-2"></span> Buscando...</div>`;
+          fetch(`{% url 'catalogo:search-suggest' %}?q=${encodeURIComponent(query)}`).then(res => res.json()).then(data => {
               resultsBox.innerHTML = '';
-              if (!data.results || data.results.length === 0) {
-                resultsBox.innerHTML = `
-                  <div class="list-group-item bg-dark text-white-50 border-0 p-3 small">
-                    No se encontraron resultados.
-                  </div>`;
+              if (!data.results.length) {
+                resultsBox.innerHTML = `<div class="p-2 text-white-50 bg-black small">Sin resultados.</div>`;
               } else {
                 data.results.forEach(item => {
                   const a = document.createElement('a');
                   a.href = item.url;
-                  a.className = 'list-group-item list-group-item-action bg-dark text-white border-bottom border-secondary border-opacity-25 d-flex align-items-center p-2';
-                  
-                  // Miniatura o Placeholder
-                  let imgHTML = '';
-                  if(item.cover){
-                    imgHTML = `<img src="${item.cover}" class="rounded me-3" width="40" height="55" style="object-fit: cover;">`;
-                  } else {
-                    imgHTML = `<div class="rounded me-3 bg-secondary d-flex align-items-center justify-content-center" style="width:40px; height:55px;"><small class="text-white-50" style="font-size:0.6rem">IMG</small></div>`;
-                  }
-
-                  a.innerHTML = `
-                    ${imgHTML}
-                    <div>
-                      <div class="fw-bold small text-truncate" style="max-width: 180px;">${item.title}</div>
-                      <div class="text-white-50" style="font-size: 0.75rem;">${item.author || 'Autor desconocido'}</div>
-                    </div>
-                  `;
+                  a.className = 'list-group-item list-group-item-action bg-black text-white border-bottom border-secondary border-opacity-25 p-2 d-flex align-items-center gap-2 hover-bg-dark';
+                  a.innerHTML = `<img src="${item.cover || '/static/images/sinfondo.png'}" width="25" height="35" class="rounded object-fit-cover"><div class="text-truncate"><div class="fw-bold small text-truncate">${item.title}</div><div class="text-white-50" style="font-size:0.6rem">${item.author}</div></div>`;
                   resultsBox.appendChild(a);
                 });
               }
-            })
-            .catch(err => {
-              console.error("Search error:", err);
-              hideResults();
             });
         }, 300);
-      });
-
-      // Ocultar al hacer clic fuera
-      document.addEventListener('click', function(e) {
-        if (!form.contains(e.target)) hideResults();
-      });
-      
-      // Ocultar con Escape
-      input.addEventListener('keydown', function(e){
-        if(e.key === 'Escape') hideResults();
       });
     }
   })();
   </script>
+
+  <style>
+    /* Navbar Glass */
+    .mv-navbar {
+      background: rgba(5, 5, 5, 0.85);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.6rem 0; transition: all 0.3s ease;
+    }
+    .brand-text { font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 1.2rem; }
+    
+    /* Footer Glass Fijo */
+    .mv-footer {
+      background: rgba(10, 10, 12, 0.90); /* Oscuro pero con transparencia */
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      z-index: 1040;
+    }
+    .blur-footer { width: 400px; height: 100px; filter: blur(80px); pointer-events: none; z-index: -1; }
+    
+    /* Iconos Sociales */
+    .social-link {
+      color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: all 0.3s ease;
+    }
+    .social-link:hover { color: #00e5ff; transform: translateY(-2px); }
+
+    /* Espaciado */
+    .pt-nav { margin-top: 68px; }
+    
+    /* Componentes */
+    .nav-link-custom { color: #a1a1aa !important; font-weight: 500; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; position: relative; padding: 0.5rem 0.8rem; transition: color 0.3s; }
+    .nav-link-custom:hover, .nav-link-custom.active { color: white !important; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+    .nav-link-custom::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: #00e5ff; transition: all 0.3s ease; transform: translateX(-50%); }
+    .nav-link-custom:hover::after { width: 60%; }
+    
+    .search-form .input-group { border-radius: 50rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .search-form input::placeholder { color: rgba(255,255,255,0.3); font-size: 0.8rem; }
+    .shadow-neon-sm { box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
+    
+    .user-pill { background: rgba(255,255,255,0.05); border-radius: 50rem; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
+    .user-pill:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+    
+    .dropdown-menu { background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; }
+    .dropdown-item:hover { background: rgba(255,255,255,0.1); color: white; }
+    .hover-bg-danger:hover { background: #dc3545 !important; color: white !important; }
+    
+    .hover-bg-dark:hover { background-color: #1a1a1a !important; }
+    .transition-colors { transition: color 0.3s ease; }
+    .drop-shadow-sm { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  </style>
 
   {% block extra_js %}{% endblock %}
 </body>

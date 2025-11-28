@@ -7,7 +7,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect, JsonResponse
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
-from .models import Manga, Chapter, Panel, Arc
+from .models import Manga, Chapter, Panel, Arc, GENEROS
 from .forms import MangaForm, ChapterForm
 
 # Importamos la utilidad de procesamiento de archivos
@@ -78,7 +78,23 @@ def pagina_inicio(request):
     return render(request, 'catalogo/inicio.html', contexto)
 
 def lista_mangas(request):
-    return render(request, 'catalogo/lista_mangas.html', {'mangas': Manga.objects.all()})
+    # 1. Obtenemos el parámetro de la URL (si existe)
+    genero_filtrado = request.GET.get('genero')
+    
+    # 2. Empezamos con todos los mangas
+    mangas = Manga.objects.all().order_by('titulo')
+    
+    # 3. Si hay filtro, aplicamos
+    if genero_filtrado:
+        mangas = mangas.filter(genero=genero_filtrado)
+        
+    context = {
+        'mangas': mangas,
+        'generos': GENEROS,       # Pasamos la lista de opciones para el menú
+        'filtro_actual': genero_filtrado # Para saber cuál botón pintar de activo
+    }
+    
+    return render(request, 'catalogo/lista_mangas.html', context)
 
 def nosotros(request):
     return render(request, 'catalogo/nosotros.html')

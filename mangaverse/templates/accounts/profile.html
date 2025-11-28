@@ -22,7 +22,7 @@
       </span>
     {% else %}
       <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 shadow-sm rounded-pill">
-        ⚔️ OTAKU NIVEL 1
+        ⚔️ CREADOR / OTAKU
       </span>
     {% endif %}
   </div>
@@ -69,9 +69,25 @@
               <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 
+                {% if u_form.errors or p_form.errors %}
+                  <div class="alert alert-danger bg-danger bg-opacity-10 border-0 p-2 mb-3">
+                    <small class="text-danger">Por favor corrige los errores.</small>
+                  </div>
+                {% endif %}
+
                 <div class="mb-3">
                   <label class="small text-secondary fw-bold mb-1">Avatar</label>
                   {{ p_form.avatar }}
+                </div>
+
+                <div class="mb-2">
+                   <label class="small text-secondary fw-bold mb-1">Nombre de Usuario</label>
+                   {{ u_form.username }}
+                </div>
+
+                <div class="mb-2">
+                   <label class="small text-secondary fw-bold mb-1">Email</label>
+                   {{ u_form.email }}
                 </div>
 
                 <div class="row g-2 mb-2">
@@ -83,11 +99,6 @@
                      <label class="small text-secondary fw-bold mb-1">Apellido</label>
                      {{ u_form.last_name }}
                   </div>
-                </div>
-                
-                <div class="mb-2">
-                   <label class="small text-secondary fw-bold mb-1">Email</label>
-                   {{ u_form.email }}
                 </div>
 
                 <div class="mb-3">
@@ -109,24 +120,85 @@
     <div class="col-lg-8">
       
       {% if mis_mangas %}
-      <div class="card bg-dark border border-secondary border-opacity-25 shadow-lg mb-5 overflow-hidden">
-        <div class="card-header bg-transparent border-bottom border-white border-opacity-10 py-3 d-flex justify-content-between align-items-center">
-          <h5 class="text-white fw-bold mb-0">📊 Rendimiento de Creador</h5>
-          <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
-            {{ mis_mangas.count }} Obras Publicadas
-          </span>
-        </div>
-        <div class="card-body p-4">
-          <div style="height: 300px; width: 100%;">
-            <canvas id="mangaChart"></canvas>
+        
+        <div class="card bg-dark border border-secondary border-opacity-25 shadow-lg mb-5 overflow-hidden">
+          <div class="card-header bg-transparent border-bottom border-white border-opacity-10 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="text-white fw-bold mb-0">📊 Rendimiento de Creador</h5>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+              {{ mis_mangas.count }} Obras Publicadas
+            </span>
+          </div>
+          <div class="card-body p-4">
+            <div style="height: 250px; width: 100%;">
+              <canvas id="mangaChart"></canvas>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div class="card bg-transparent border-0 mb-5">
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2 flex-wrap gap-2">
+            <h4 class="h5 text-white mb-0 text-nowrap">🏭 Mis Creaciones</h4>
+            
+            <div class="d-flex gap-2 align-items-center flex-grow-1 justify-content-end">
+                <div class="position-relative" style="max-width: 200px; width: 100%;">
+                    <input type="text" id="creationFilter" class="form-control form-control-sm bg-dark border-secondary text-white rounded-pill ps-3" placeholder="🔍 Filtrar obras...">
+                </div>
+                <a href="{% url 'catalogo:manga-create' %}" class="btn btn-sm btn-outline-light rounded-pill px-3 hover-glow text-nowrap">
+                + Nueva
+                </a>
+            </div>
+          </div>
+
+          <div class="row row-cols-2 row-cols-md-3 g-3" id="creationsGrid">
+            {% for manga in mis_mangas %}
+              <div class="col creation-item" data-title="{{ manga.titulo|lower }}">
+                <div class="card h-100 bg-dark text-white border border-secondary border-opacity-25 shadow-sm overflow-hidden position-relative group-hover">
+                  
+                  <div class="position-relative w-100 rounded-top overflow-hidden bg-black" style="padding-top: 140%;">
+                    {% if manga.portada %}
+                      <img src="{{ manga.portada.url }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover transition-scale">
+                    {% else %}
+                      <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
+                        <img src="{% static 'images/sinfondo.png' %}" class="w-50 opacity-25 grayscale">
+                      </div>
+                    {% endif %}
+                    
+                    <div class="position-absolute inset-0 bg-black bg-opacity-90 d-flex flex-column align-items-center justify-content-center gap-2 opacity-0 group-hover-opacity-100 transition-opacity backdrop-blur-sm">
+                      <a href="{% url 'catalogo:chapter-create' manga.slug %}" class="btn btn-brand-neon btn-sm fw-bold w-75 scale-up">
+                        + Capítulo
+                      </a>
+                      <a href="{% url 'catalogo:manga-update' manga.slug %}" class="btn btn-outline-light btn-sm w-75 scale-up">
+                        Editar Info
+                      </a>
+                      <a href="{% url 'catalogo:manga-detail' manga.slug %}" class="btn btn-link text-white-50 btn-sm text-decoration-none scale-up">
+                        Ver Página
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div class="card-body p-2 bg-surface border-top border-white border-opacity-5">
+                    <h6 class="card-title text-white fw-bold text-truncate small mb-1">{{ manga.titulo }}</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25" style="font-size: 0.6rem;">{{ manga.total_caps }} Caps</span>
+                      <small class="text-danger fw-bold" style="font-size: 0.7rem;">❤️ {{ manga.total_likes }}</small>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          
+          <div id="noResultsMsg" class="text-center py-4 text-white-50 small fst-italic" style="display: none;">
+            No se encontraron obras con ese nombre.
+          </div>
+        </div>
+
       {% endif %}
 
       <div class="card bg-transparent border-0">
         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-white border-opacity-10 pb-2">
-          <h4 class="h5 text-white fw-bold mb-0">📚 Mi Biblioteca (Favoritos)</h4>
+          <h4 class="h5 text-white mb-0">📚 Mi Biblioteca (Favoritos)</h4>
           <span class="text-secondary small">{{ favoritos.count }} mangas</span>
         </div>
         
@@ -134,35 +206,24 @@
           <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
             {% for manga in favoritos %}
               <div class="col">
-                <div class="card mv-card h-100 border-0 overflow-hidden position-relative group-hover bg-dark">
-                  <a href="{% url 'catalogo:manga-detail' manga.slug %}" class="text-decoration-none d-block h-100">
-                    
-                    <div class="position-relative w-100 rounded-top overflow-hidden shadow-lg bg-black" style="padding-top: 145%;">
-                      {% if manga.portada %}
-                        <img src="{{ manga.portada.url }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover transition-transform">
-                      {% else %}
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
-                          <img src="{% static 'images/sinfondo.png' %}" width="50" class="opacity-25 grayscale">
-                        </div>
-                      {% endif %}
-                      
-                      <div class="position-absolute top-0 end-0 p-2 opacity-0 group-hover-opacity-100 transition-opacity">
-                        <span class="badge bg-primary shadow-sm">Leer</span>
+                <a href="{% url 'catalogo:manga-detail' manga.slug %}" class="card h-100 bg-dark text-white border-0 shadow-sm overflow-hidden position-relative group-hover text-decoration-none mv-card">
+                  <div class="position-relative w-100 rounded-top overflow-hidden shadow-lg bg-black" style="padding-top: 145%;">
+                    {% if manga.portada %}
+                      <img src="{{ manga.portada.url }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover transition-transform">
+                    {% else %}
+                      <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-secondary bg-opacity-10">
+                        <img src="{% static 'images/sinfondo.png' %}" width="50" class="opacity-25 grayscale">
                       </div>
-
-                      <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-gradient-to-t">
-                        {% if manga.genero %}
-                          <span class="badge bg-dark border border-secondary text-secondary" style="font-size: 0.6rem;">{{ manga.get_genero_display }}</span>
-                        {% endif %}
-                      </div>
+                    {% endif %}
+                    <div class="position-absolute top-0 end-0 p-2 opacity-0 group-hover-opacity-100 transition-opacity">
+                      <span class="badge bg-primary shadow-sm">Leer</span>
                     </div>
-                    
-                    <div class="card-body p-2 bg-surface border-top border-white border-opacity-5">
-                      <h6 class="card-title text-white fw-bold text-truncate small mb-0">{{ manga.titulo }}</h6>
-                      <small class="text-secondary text-truncate d-block" style="font-size: 0.7rem;">{{ manga.autor }}</small>
-                    </div>
-                  </a>
-                </div>
+                  </div>
+                  <div class="card-body p-2 bg-surface border-top border-white border-opacity-5">
+                    <h6 class="card-title text-white fw-bold text-truncate small mb-0">{{ manga.titulo }}</h6>
+                    <small class="text-secondary text-truncate d-block" style="font-size: 0.7rem;">{{ manga.autor }}</small>
+                  </div>
+                </a>
               </div>
             {% endfor %}
           </div>
@@ -174,34 +235,38 @@
             <a href="{% url 'catalogo:lista-mangas' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">Explorar Catálogo</a>
           </div>
         {% endif %}
-
       </div>
-    </div>
 
+    </div>
   </div>
 </div>
 
 <style>
-  /* Colores y Gradientes */
+  /* Estilos específicos */
   .text-gradient-cyan {
     background: linear-gradient(to right, #00e5ff, #7c4dff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .bg-gradient-to-b { background: linear-gradient(to bottom, #7c4dff 0%, transparent 100%); }
-  .bg-gradient-to-t { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); }
   
-  /* Sombras y Efectos */
   .shadow-neon-box { box-shadow: 0 0 20px rgba(124, 77, 255, 0.3); }
   .hover-glow:hover { box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); border-color: white !important; }
   
   /* Animaciones Tarjeta */
   .group-hover:hover img.transition-transform { transform: scale(1.1); }
   .transition-transform { transition: transform 0.4s ease; }
+  .transition-scale { transition: transform 0.5s ease; }
+  .group-hover:hover .transition-scale { transform: scale(1.1); }
+  
   .group-hover-opacity-100:hover { opacity: 1 !important; }
   .transition-opacity { transition: opacity 0.3s ease; }
+  .backdrop-blur-sm { backdrop-filter: blur(4px); }
   
-  /* Inputs del Formulario */
+  /* Efecto botones hover */
+  .scale-up:hover { transform: scale(1.05); }
+  
+  /* Inputs */
   .form-control, .form-select {
     background-color: rgba(255,255,255,0.05) !important;
     border: 1px solid rgba(255,255,255,0.1) !important;
@@ -218,6 +283,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. GRÁFICO
     const ctx = document.getElementById('mangaChart');
     if (ctx) {
       new Chart(ctx, {
@@ -226,54 +293,58 @@
           labels: {{ chart_labels|safe }}, 
           datasets: [
             {
-              label: 'Likes (Favoritos)',
+              label: 'Likes',
               data: {{ chart_likes|safe }},
               backgroundColor: 'rgba(255, 46, 99, 0.6)', 
               borderColor: '#ff2e63',
               borderWidth: 1,
-              borderRadius: 4,
-              hoverBackgroundColor: '#ff2e63'
+              borderRadius: 4
             },
             {
-              label: 'Capítulos Subidos',
+              label: 'Capítulos',
               data: {{ chart_caps|safe }},
               backgroundColor: 'rgba(0, 229, 255, 0.6)',
               borderColor: '#00e5ff',
               borderWidth: 1,
-              borderRadius: 4,
-              hoverBackgroundColor: '#00e5ff'
+              borderRadius: 4
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { 
-              labels: { color: '#a1a1aa', font: { family: 'Inter' } } 
-            },
-            tooltip: {
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              titleColor: '#fff',
-              bodyColor: '#ccc',
-              borderColor: 'rgba(255,255,255,0.1)',
-              borderWidth: 1
-            }
-          },
+          plugins: { legend: { labels: { color: '#a1a1aa' } } },
           scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(255, 255, 255, 0.05)' },
-              ticks: { color: '#a1a1aa', stepSize: 1 }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { color: '#a1a1aa' }
-            }
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a1a1aa' } },
+            x: { grid: { display: false }, ticks: { color: '#a1a1aa' } }
           }
         }
       });
     }
+
+    // 2. FILTRO DE BÚSQUEDA
+    const filterInput = document.getElementById('creationFilter');
+    if (filterInput) {
+        filterInput.addEventListener('keyup', function() {
+            const query = this.value.toLowerCase();
+            const items = document.querySelectorAll('.creation-item');
+            let hasResults = false;
+
+            items.forEach(item => {
+                const title = item.getAttribute('data-title');
+                if (title.includes(query)) {
+                    item.style.display = 'block';
+                    hasResults = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            const msg = document.getElementById('noResultsMsg');
+            msg.style.display = hasResults ? 'none' : 'block';
+        });
+    }
+
   });
 </script>
 {% endif %}
