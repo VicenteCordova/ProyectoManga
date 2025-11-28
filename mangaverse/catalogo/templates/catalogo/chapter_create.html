@@ -6,14 +6,25 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 <style>
+    /* Estilos Cyberpunk para Dropzone */
     .dropzone {
         border: 2px dashed var(--mv-primary);
-        background: rgba(0,0,0,0.2);
+        background: rgba(0, 229, 255, 0.05); /* Fondo sutil cian */
         color: white;
-        border-radius: 10px;
-        min-height: 200px;
+        border-radius: 15px;
+        min-height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .dropzone:hover {
+        background: rgba(0, 229, 255, 0.1);
+        border-color: #fff;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
     }
     .dropzone .dz-preview .dz-image { border-radius: 10px; }
+    .dropzone .dz-message { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 1.2rem; }
 </style>
 {% endblock %}
 
@@ -22,36 +33,46 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             
-            <div class="card bg-dark border-secondary shadow-lg">
-                <div class="card-body p-4">
-                    <h2 class="h4 text-white mb-4">Nuevo Capítulo para <span class="text-primary">{{ manga.titulo }}</span></h2>
+            <div class="card bg-dark border-secondary shadow-lg overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: linear-gradient(90deg, #00e5ff, #7c4dff);"></div>
+
+                <div class="card-body p-4 p-md-5">
+                    <h2 class="h3 text-white mb-1 fw-bold">Nuevo Capítulo</h2>
+                    <p class="text-secondary mb-4">Agregando contenido a <span class="text-primary fw-bold">{{ manga.titulo }}</span></p>
 
                     <form id="chapter-data-form" method="post">
                         {% csrf_token %}
-                        <div class="row g-3">
+                        
+                        <div id="error-container" class="mb-4"></div>
+
+                        <div class="row g-4">
                             <div class="col-md-8">
-                                <label class="text-secondary small">Título del Capítulo</label>
+                                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Título del Capítulo</label>
                                 {{ form.title }}
                             </div>
                             <div class="col-md-4">
-                                <label class="text-secondary small">Número</label>
+                                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Número</label>
                                 {{ form.chapter_number }}
                             </div>
                             <div class="col-12">
-                                <label class="text-secondary small">Arco (Opcional)</label>
+                                <label class="form-label text-white-50 small text-uppercase fw-bold ls-1">Arco (Opcional)</label>
                                 <div class="input-group">
                                     {{ form.arc }}
-                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#arcModal">+</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#arcModal" title="Crear Nuevo Arco">
+                                        <span class="fs-5">+</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </form>
 
-                    <hr class="border-secondary my-4">
+                    <hr class="border-secondary opacity-25 my-5">
 
-                    <div id="upload-area" style="display:none;">
-                        <h5 class="text-white mb-3">Imágenes o PDF del Capítulo</h5>
-                        <p class="text-white-50 small">Arrastra tus archivos aquí. Soportamos JPG, PNG y <strong>PDF</strong>.</p>
+                    <div id="upload-area" class="animate-fade-in" style="display:none;">
+                        <div class="text-center mb-4">
+                            <h4 class="text-white fw-bold">Sube tus Páginas</h4>
+                            <p class="text-white-50 small">Arrastra las imágenes o tu PDF aquí. Se procesarán automáticamente.</p>
+                        </div>
                         
                         <form action="{{ request.path }}" class="dropzone" id="my-dropzone">
                             {% csrf_token %}
@@ -59,12 +80,16 @@
                         </form>
 
                         <div class="d-grid mt-4">
-                            <a href="" id="finish-btn" class="btn btn-success fw-bold">Finalizar y Ver Capítulo</a>
+                            <a href="" id="finish-btn" class="btn btn-success btn-lg fw-bold shadow-neon hover-scale">
+                                ✅ Finalizar y Ver Capítulo
+                            </a>
                         </div>
                     </div>
 
-                    <div id="initial-actions" class="d-grid mt-4">
-                        <button type="button" id="save-chapter-btn" class="btn btn-brand-neon">Siguiente: Subir Páginas</button>
+                    <div id="initial-actions" class="d-grid mt-2">
+                        <button type="button" id="save-chapter-btn" class="btn btn-brand-neon btn-lg fw-bold shadow-neon transition-transform active-scale">
+                            SIGUIENTE: SUBIR PÁGINAS ➔
+                        </button>
                     </div>
 
                 </div>
@@ -75,18 +100,19 @@
 </div>
 
 <div class="modal fade" id="arcModal" tabindex="-1">
-    <div class="modal-dialog">
-        <form action="{% url 'catalogo:arc-create' manga.slug %}" method="post" class="modal-content bg-dark text-white border-secondary">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="{% url 'catalogo:arc-create' manga.slug %}" method="post" class="modal-content bg-dark text-white border-secondary shadow-lg">
             {% csrf_token %}
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title">Nuevo Arco</h5>
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold">Nuevo Arco</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="text" name="title" class="form-control bg-black text-white" placeholder="Nombre del Arco (ej: Saga de Namek)" required>
+                <label class="form-label text-secondary small">Título del Arco</label>
+                <input type="text" name="title" class="form-control bg-black text-white border-secondary" placeholder="Ej: Saga de Namek" required>
             </div>
-            <div class="modal-footer border-secondary">
-                <button type="submit" class="btn btn-primary">Guardar</button>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="submit" class="btn btn-brand-neon fw-bold">Guardar Arco</button>
             </div>
         </form>
     </div>
@@ -99,19 +125,31 @@
 <script>
     Dropzone.autoDiscover = false;
 
+    // Configuración Dropzone
     const myDropzone = new Dropzone("#my-dropzone", {
         autoProcessQueue: true,
         paramName: "file",
-        maxFilesize: 50, // MB (Para soportar PDFs grandes)
+        maxFilesize: 50, // MB
         acceptedFiles: "image/*,application/pdf",
         parallelUploads: 5,
-        dictDefaultMessage: "Arrastra imágenes o un PDF aquí",
+        dictDefaultMessage: "<div><i class='bi bi-cloud-upload display-4 d-block mb-2'></i>Arrastra imágenes o PDF aquí</div>",
     });
 
-    // Lógica para guardar el capítulo primero mediante AJAX
+    // Lógica AJAX para guardar el capítulo
     document.getElementById('save-chapter-btn').addEventListener('click', function() {
+        const btn = this;
+        const originalText = btn.innerHTML;
+        
+        // Feedback visual de carga
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Guardando...';
+        
         const form = document.getElementById('chapter-data-form');
         const formData = new FormData(form);
+        const errorContainer = document.getElementById('error-container');
+
+        // Limpiar errores previos
+        errorContainer.innerHTML = '';
 
         fetch(window.location.href, {
             method: 'POST',
@@ -121,21 +159,57 @@
         .then(response => response.json())
         .then(data => {
             if(data.status === 'created') {
-                // 1. Ocultar formulario datos, mostrar Dropzone
-                document.getElementById('chapter-data-form').style.opacity = '0.5';
-                document.getElementById('chapter-data-form').style.pointerEvents = 'none';
+                // ÉXITO: Transición a la vista de subida
+                form.style.opacity = '0.5';
+                form.style.pointerEvents = 'none';
                 document.getElementById('initial-actions').style.display = 'none';
                 
-                document.getElementById('upload-area').style.display = 'block';
-                
-                // 2. Asignar ID al dropzone
+                const uploadArea = document.getElementById('upload-area');
+                uploadArea.style.display = 'block';
+                // Pequeña animación de entrada
+                uploadArea.animate([
+                    { opacity: 0, transform: 'translateY(20px)' },
+                    { opacity: 1, transform: 'translateY(0)' }
+                ], { duration: 500, fill: 'forwards' });
+
                 document.getElementById('dz-chapter-id').value = data.chapter_id;
-                
-                // 3. Configurar botón finalizar
                 document.getElementById('finish-btn').href = data.redirect_url;
+                
             } else {
-                alert("Error en el formulario: " + JSON.stringify(data.errors));
+                // ERROR: Mostrar alerta gráfica bonita
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                
+                let errorHtml = `
+                    <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger fade show shadow-sm" role="alert">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-2"></i>
+                            <strong class="fs-6">Error al crear el capítulo</strong>
+                        </div>
+                        <ul class="mb-0 ps-3 small">
+                `;
+                
+                // Iterar errores y traducir nombres técnicos si es posible
+                for (const [field, messages] of Object.entries(data.errors)) {
+                    let fieldName = field;
+                    if (field === 'title') fieldName = 'Título';
+                    if (field === 'chapter_number') fieldName = 'Número';
+                    
+                    errorHtml += `<li><strong>${fieldName}:</strong> ${messages.join(", ")}</li>`;
+                }
+                errorHtml += `</ul></div>`;
+                
+                errorContainer.innerHTML = errorHtml;
+                
+                // Scroll suave hacia el error
+                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            errorContainer.innerHTML = `<div class="alert alert-danger">Ocurrió un error inesperado de red.</div>`;
         });
     });
 </script>

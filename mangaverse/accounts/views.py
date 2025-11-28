@@ -13,7 +13,11 @@ from .models import Profile
 
 def register(request):
     """
-    Vista de registro de usuarios.
+    Vista de registro de nuevos usuarios.
+    
+    Utiliza el RegisterForm personalizado. Si el registro es exitoso,
+    inicia sesión automáticamente y redirige al perfil del usuario.
+    En caso de error, muestra mensajes flash informativos.
     """
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -30,10 +34,16 @@ def register(request):
 @login_required
 def profile(request):
     """
-    Vista del Perfil de Usuario (Dashboard).
-    Maneja la edición de datos y muestra estadísticas + biblioteca.
+    Vista principal del Perfil de Usuario (Dashboard).
+    
+    Esta vista cumple múltiples funciones:
+    1. Gestión de perfil: Permite editar datos de usuario y perfil (avatar, bio).
+    2. Centro de estadísticas: Calcula métricas de las obras subidas por el usuario para Chart.js.
+    3. Biblioteca: Muestra la lista de mangas favoritos.
+    4. Gestión de obras: Lista los mangas creados por el usuario para edición rápida.
     """
     # 1. Aseguramos que el usuario tenga un perfil creado en la BD
+    # Esto previene errores con usuarios antiguos o creados desde admin sin señal
     if not hasattr(request.user, 'profile'):
         Profile.objects.create(user=request.user)
 
@@ -48,37 +58,40 @@ def profile(request):
             messages.success(request, '¡Tu perfil ha sido actualizado!')
             return redirect('accounts:profile')
     else:
-        # Carga inicial del formulario (GET)
+        # Carga inicial del formulario (GET) con datos existentes
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
-    # 3. DATOS PARA EL DASHBOARD (Esto es lo que faltaba para que se vea el gráfico)
+    # 3. DATOS PARA EL DASHBOARD (Lógica de Negocio)
     
-    # A. Mis Favoritos (Sección "Mi Biblioteca")
+    # A. Mis Favoritos: Recupera los mangas marcados como favoritos (Biblioteca de lectura)
     favoritos = request.user.profile.favorites.all()
     
-    # B. Mis Creaciones (Mangas subidos por mí)
-    # Annotate nos permite contar likes y capítulos para el gráfico
+    # B. Mis Creaciones: Recupera los mangas donde el usuario es el 'owner'.
+    # Usamos .annotate() para agregar campos calculados directamente desde la BD:
+    # - total_likes: Cuántos usuarios tienen este manga en favoritos.
+    # - total_caps: Cuántos capítulos tiene este manga.
     mis_mangas = Manga.objects.filter(owner=request.user).annotate(
         total_likes=Count('favorited_by'),
         total_caps=Count('chapters')
     )
     
-    # C. Preparar listas de datos para Chart.js
-    # Convertimos los QuerySets en listas simples de Python
+    # C. Preparación de datos para Chart.js
+    # Convertimos los QuerySets en listas simples de Python para serializarlos
+    # fácilmente en el template como arrays de JavaScript.
     chart_labels = [m.titulo for m in mis_mangas]
     chart_likes = [m.total_likes for m in mis_mangas]
     chart_caps = [m.total_caps for m in mis_mangas]
 
-    # 4. Enviamos todo al template
+    # 4. Contexto para el template
     context = {
         'u_form': u_form,
         'p_form': p_form,
         'favoritos': favoritos,       # Para la sección "Mi Biblioteca"
-        'mis_mangas': mis_mangas,     # Para contar cuántos subiste
-        'chart_labels': chart_labels, # Eje X del gráfico
-        'chart_likes': chart_likes,   # Barra Roja del gráfico
-        'chart_caps': chart_caps,     # Barra Cian del gráfico
+        'mis_mangas': mis_mangas,     # Para la lista de gestión "Mis Creaciones"
+        'chart_labels': chart_labels, # Eje X del gráfico (Nombres)
+        'chart_likes': chart_likes,   # Dataset 1 (Likes)
+        'chart_caps': chart_caps,     # Dataset 2 (Capítulos)
     }
     return render(request, "accounts/profile.html", context)
 
@@ -86,7 +99,11 @@ def profile(request):
 @require_POST
 def add_favorite(request, manga_slug):
     """
-    Vista AJAX para dar like/fav a un manga.
+    Vista API (AJAX) para alternar el estado de favorito de un manga.
+    
+    Recibe una petición POST asíncrona desde el frontend.
+    Retorna:
+        JsonResponse: Con el nuevo estado ('liked': boolean) y el total actualizado.
     """
     manga = get_object_or_404(Manga, slug=manga_slug)
     
@@ -96,6 +113,7 @@ def add_favorite(request, manga_slug):
 
     profile = request.user.profile
     
+    # Lógica de Toggle (Si existe lo quita, si no, lo agrega)
     if profile.favorites.filter(id=manga.id).exists():
         profile.favorites.remove(manga)
         liked = False
@@ -108,7 +126,9 @@ def add_favorite(request, manga_slug):
 @require_POST
 def logout_confirm(request):
     """
-    Cierre de sesión seguro.
+    Vista de cierre de sesión seguro.
+    
+    Requiere método POST para evitar CSRF attacks o salidas accidentales por GET.
     """
     logout(request)
     messages.success(request, "Sesión cerrada correctamente. ¡Hasta pronto!")

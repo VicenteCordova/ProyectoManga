@@ -7,6 +7,12 @@ User = get_user_model()
 
 # --- Formulario de Registro ---
 class RegisterForm(UserCreationForm):
+    """
+    Formulario personalizado para el registro de nuevos usuarios.
+    
+    Hereda de UserCreationForm para manejar la creación segura de contraseñas.
+    Añade el campo 'email' como obligatorio y valida su unicidad en el sistema.
+    """
     email = forms.EmailField(
         required=True,
         help_text="Usa un correo válido para recuperación."
@@ -17,6 +23,12 @@ class RegisterForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
     def clean_email(self):
+        """
+        Valida y normaliza el campo de correo electrónico.
+        
+        Verifica que el email ingresado no exista ya en la base de datos,
+        lanzando un error de validación si está duplicado.
+        """
         email = self.cleaned_data["email"].lower().strip()
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("Este correo ya está registrado.")
@@ -24,6 +36,12 @@ class RegisterForm(UserCreationForm):
 
 # --- Formularios de Perfil ---
 class UserUpdateForm(forms.ModelForm):
+    """
+    Formulario para la actualización de datos básicos del modelo User.
+    
+    Permite editar nombre de usuario, email, nombre y apellido.
+    Incluye widgets personalizados con clases CSS para el tema oscuro.
+    """
     email = forms.EmailField()
 
     class Meta:
@@ -37,6 +55,11 @@ class UserUpdateForm(forms.ModelForm):
         }
 
 class ProfileUpdateForm(forms.ModelForm):
+    """
+    Formulario para la actualización del modelo Profile (información extendida).
+    
+    Maneja la subida de la imagen de avatar y la edición de la biografía.
+    """
     class Meta:
         model = Profile
         fields = ['avatar', 'bio']
@@ -51,7 +74,19 @@ class ProfileUpdateForm(forms.ModelForm):
 
 # --- Formulario de Login Personalizado ---
 class LoginForm(AuthenticationForm):
+    """
+    Formulario de autenticación personalizado.
+    
+    Extiende el formulario base de Django para inyectar clases CSS y estilos
+    específicos en el constructor, asegurando consistencia visual con el resto del sitio.
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Inicializa el formulario y actualiza los widgets de los campos.
+        
+        Aplica clases de Bootstrap y estilos personalizados a los campos
+        'username' y 'password'.
+        """
         super().__init__(*args, **kwargs)
         
         # Estilo base para inputs modernos oscuros

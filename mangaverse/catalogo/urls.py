@@ -25,6 +25,9 @@ urlpatterns = [
          name='chapter-delete'),
     path('mangas/<slug:manga_slug>/capitulo/<slug:chapter_slug>/editar/', views.chapter_edit_upload, 
          name='chapter-edit'),
+     # Ruta para eliminar un panel individual (página)
+    path('panel/<int:panel_id>/eliminar/', views.panel_delete, name='panel-delete'),
+    path('api/reordenar-paneles/', views.reorder_panels, name='reorder-panels'),
 
     # --- GESTIÓN DE ARCOS (Nuevas Rutas) ---
     path('mangas/<slug:manga_slug>/nuevo-arco/', views.arc_create_view, name='arc-create'),

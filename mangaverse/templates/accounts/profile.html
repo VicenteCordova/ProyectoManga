@@ -138,7 +138,6 @@
         <div class="card bg-transparent border-0 mb-5">
           <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2 flex-wrap gap-2">
             <h4 class="h5 text-white mb-0 text-nowrap">🏭 Mis Creaciones</h4>
-            
             <div class="d-flex gap-2 align-items-center flex-grow-1 justify-content-end">
                 <div class="position-relative" style="max-width: 200px; width: 100%;">
                     <input type="text" id="creationFilter" class="form-control form-control-sm bg-dark border-secondary text-white rounded-pill ps-3" placeholder="🔍 Filtrar obras...">
@@ -153,7 +152,6 @@
             {% for manga in mis_mangas %}
               <div class="col creation-item" data-title="{{ manga.titulo|lower }}">
                 <div class="card h-100 bg-dark text-white border border-secondary border-opacity-25 shadow-sm overflow-hidden position-relative group-hover">
-                  
                   <div class="position-relative w-100 rounded-top overflow-hidden bg-black" style="padding-top: 140%;">
                     {% if manga.portada %}
                       <img src="{{ manga.portada.url }}" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover transition-scale">
@@ -183,14 +181,29 @@
                       <small class="text-danger fw-bold" style="font-size: 0.7rem;">❤️ {{ manga.total_likes }}</small>
                     </div>
                   </div>
-
                 </div>
               </div>
             {% endfor %}
           </div>
+          <div id="noResultsMsg" class="text-center py-4 text-white-50 small fst-italic" style="display: none;">No se encontraron obras.</div>
+        </div>
+
+      {% else %}
+        
+        <div class="card bg-dark border border-secondary border-opacity-25 shadow-lg mb-5 text-center overflow-hidden">
+          <div class="position-absolute top-0 end-0 p-5 bg-primary opacity-10 rounded-circle blur-decoration" style="transform: translate(30%, -30%);"></div>
           
-          <div id="noResultsMsg" class="text-center py-4 text-white-50 small fst-italic" style="display: none;">
-            No se encontraron obras con ese nombre.
+          <div class="card-body p-5 position-relative z-1">
+            <div class="mb-3 animate-float">
+              <span class="display-4">🚀</span>
+            </div>
+            <h3 class="text-white fw-bold mb-2">¿Eres un Creador?</h3>
+            <p class="text-white-50 mb-4" style="max-width: 400px; margin: 0 auto;">
+              Aún no has publicado ninguna obra. Comparte tus historias con la comunidad y comienza a ver tus estadísticas aquí.
+            </p>
+            <a href="{% url 'catalogo:manga-create' %}" class="btn btn-brand-neon px-5 fw-bold shadow-neon hover-scale">
+              + Crear mi Primera Obra
+            </a>
           </div>
         </div>
 
@@ -259,13 +272,17 @@
   .transition-scale { transition: transform 0.5s ease; }
   .group-hover:hover .transition-scale { transform: scale(1.1); }
   
-  .group-hover-opacity-100:hover { opacity: 1 !important; }
+  /* Corrección Menú Hover */
+  .group-hover:hover .group-hover-opacity-100 { opacity: 1 !important; pointer-events: auto; }
   .transition-opacity { transition: opacity 0.3s ease; }
   .backdrop-blur-sm { backdrop-filter: blur(4px); }
   
-  /* Efecto botones hover */
+  /* Efectos Extra */
   .scale-up:hover { transform: scale(1.05); }
-  
+  .blur-decoration { filter: blur(80px); width: 150px; height: 150px; pointer-events: none; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
   /* Inputs */
   .form-control, .form-select {
     background-color: rgba(255,255,255,0.05) !important;
@@ -283,7 +300,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    
     // 1. GRÁFICO
     const ctx = document.getElementById('mangaChart');
     if (ctx) {
@@ -321,7 +337,6 @@
         }
       });
     }
-
     // 2. FILTRO DE BÚSQUEDA
     const filterInput = document.getElementById('creationFilter');
     if (filterInput) {
@@ -329,22 +344,13 @@
             const query = this.value.toLowerCase();
             const items = document.querySelectorAll('.creation-item');
             let hasResults = false;
-
             items.forEach(item => {
                 const title = item.getAttribute('data-title');
-                if (title.includes(query)) {
-                    item.style.display = 'block';
-                    hasResults = true;
-                } else {
-                    item.style.display = 'none';
-                }
+                if (title.includes(query)) { item.style.display = 'block'; hasResults = true; } else { item.style.display = 'none'; }
             });
-
-            const msg = document.getElementById('noResultsMsg');
-            msg.style.display = hasResults ? 'none' : 'block';
+            document.getElementById('noResultsMsg').style.display = hasResults ? 'none' : 'block';
         });
     }
-
   });
 </script>
 {% endif %}

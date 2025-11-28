@@ -9,6 +9,8 @@ from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from .models import Manga, Chapter, Panel, Arc, GENEROS
 from .forms import MangaForm, ChapterForm
+from django.views.decorators.http import require_POST
+import json
 
 # Importamos la utilidad de procesamiento de archivos
 try:
@@ -16,57 +18,19 @@ try:
 except ImportError:
     def process_chapter_files(*args, **kwargs): pass
 
-
-
-@login_required
-def profile(request):
-    # Aseguramos perfil
-    if not hasattr(request.user, 'profile'):
-        from .models import Profile
-        Profile.objects.create(user=request.user)
-
-    if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-            messages.success(request, '¡Tu perfil ha sido actualizado!')
-            return redirect('accounts:profile')
-    else:
-        u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=request.user.profile)
-
-    # DATOS PARA EL DASHBOARD
-    # 1. Mis Favoritos (Lo que leo)
-    favoritos = request.user.profile.favorites.all()
-    
-    # 2. Mis Creaciones (Lo que subí) - Para el gráfico
-    mis_mangas = Manga.objects.filter(owner=request.user).annotate(
-        total_likes=Count('favorited_by'),
-        total_caps=Count('chapters')
-    )
-    
-    # Preparamos listas para Chart.js
-    chart_labels = [m.titulo for m in mis_mangas]
-    chart_likes = [m.total_likes for m in mis_mangas]
-    chart_caps = [m.total_caps for m in mis_mangas]
-
-    context = {
-        'u_form': u_form,
-        'p_form': p_form,
-        'favoritos': favoritos,
-        'mis_mangas': mis_mangas, # Enviamos también los objetos
-        'chart_labels': chart_labels,
-        'chart_likes': chart_likes,
-        'chart_caps': chart_caps,
-    }
-    return render(request, "accounts/profile.html", context)
 # --------------------------
 # VISTAS PÚBLICAS
 # --------------------------
 
 def pagina_inicio(request): 
+    """
+    Renderiza la página de inicio del sitio.
+    
+    Esta vista recopila y muestra:
+    1. Los 5 mangas más recientes.
+    2. Los 5 mangas más populares (basado en likes).
+    3. Si el usuario está autenticado, muestra sus últimos 4 favoritos para acceso rápido.
+    """
     recent_mangas = Manga.objects.order_by('-id')[:5]
     popular_mangas = Manga.objects.annotate(num_likes=Count('favorited_by')).order_by('-num_likes')[:5]
     contexto = {'recent_mangas': recent_mangas, 'popular_mangas': popular_mangas}
@@ -78,6 +42,14 @@ def pagina_inicio(request):
     return render(request, 'catalogo/inicio.html', contexto)
 
 def lista_mangas(request):
+    """
+    Muestra el catálogo completo de mangas disponibles.
+    
+    Permite filtrar la lista por género mediante parámetros GET en la URL.
+    
+    Args:
+        request: Objeto HttpRequest. Si contiene 'genero' en GET, filtra los resultados.
+    """
     # 1. Obtenemos el parámetro de la URL (si existe)
     genero_filtrado = request.GET.get('genero')
     
@@ -97,9 +69,18 @@ def lista_mangas(request):
     return render(request, 'catalogo/lista_mangas.html', context)
 
 def nosotros(request):
+    """
+    Renderiza la página estática 'Nosotros' o 'Misión'.
+    """
     return render(request, 'catalogo/nosotros.html')
 
 def search(request):
+    """
+    Realiza una búsqueda de mangas por título, descripción o autor.
+    
+    También busca coincidencias en los títulos de los capítulos asociados.
+    Los resultados se paginan.
+    """
     query = (request.GET.get('q') or '').strip()
     if not query: return redirect('catalogo:lista-mangas')
     
@@ -116,6 +97,12 @@ def search(request):
     return render(request, 'catalogo/search_results.html', {'query': query, 'page_obj': page_obj, 'total': mangas_qs.count()})
 
 def search_suggest(request):
+    """
+    API Endpoint para sugerencias de búsqueda en tiempo real (AJAX).
+    
+    Retorna:
+        JsonResponse: Una lista de diccionarios con título, autor, URL y portada de los mangas coincidentes.
+    """
     q = (request.GET.get('q') or '').strip()
     if not q: return JsonResponse({'results': []})
     
@@ -128,12 +115,22 @@ def search_suggest(request):
     return JsonResponse({"results": results})
 
 def manga_detail_view(request, manga_slug):
+    """
+    Muestra la ficha detallada de un manga específico.
+    
+    Incluye la lista de capítulos ordenados y la estructura de arcos narrativos.
+    """
     manga = get_object_or_404(Manga, slug=manga_slug)
     chapters = manga.chapters.all().order_by('chapter_number')
     arcs = manga.arcs.all().order_by('order')
     return render(request, 'catalogo/manga_detail.html', {'manga': manga, 'chapters': chapters, 'arcs': arcs})
 
 def chapter_detail_view(request, manga_slug, chapter_slug):
+    """
+    Visor de lectura de un capítulo.
+    
+    Carga todas las imágenes (Paneles) asociadas al capítulo, ordenadas por número de página.
+    """
     chapter = get_object_or_404(Chapter, manga__slug=manga_slug, slug=chapter_slug)
     panels = chapter.panels.all().order_by('page_number')
     return render(request, 'catalogo/chapter_detail.html', {'chapter': chapter, 'panels': panels})
@@ -143,6 +140,13 @@ def chapter_detail_view(request, manga_slug, chapter_slug):
 # --------------------------
 
 class OwnerOrAdminRequiredMixin(UserPassesTestMixin):
+    """
+    Mixin de control de acceso personalizado.
+    
+    Permite el acceso a una vista solo si el usuario actual es:
+    1. El propietario (owner) del objeto (Manga) o del objeto padre (Manga del Capítulo/Arco).
+    2. Un superusuario (Administrador).
+    """
     def test_func(self):
         obj = self.get_object()
         if isinstance(obj, Chapter):
@@ -153,12 +157,12 @@ class OwnerOrAdminRequiredMixin(UserPassesTestMixin):
 
 # --- MANGA CRUD ---
 
-# En catalogo/views.py
-
-# Quitamos PermissionRequiredMixin de la lista de herencia
 class MangaCreateView(LoginRequiredMixin, CreateView):
     """
-    Crea solo el objeto Manga. Cualquier usuario registrado puede hacerlo.
+    Vista para crear un nuevo Manga.
+    
+    Cualquier usuario registrado puede crear un manga.
+    Automáticamente asigna al usuario actual como el 'owner' del manga.
     """
     model = Manga
     form_class = MangaForm
@@ -175,6 +179,11 @@ class MangaCreateView(LoginRequiredMixin, CreateView):
         return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.slug})
 
 class MangaUpdateView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, UpdateView):
+    """
+    Vista para editar la información de un Manga existente.
+    
+    Protegida por OwnerOrAdminRequiredMixin.
+    """
     model = Manga
     form_class = MangaForm
     template_name = 'catalogo/manga_form.html'
@@ -189,6 +198,11 @@ class MangaUpdateView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, UpdateView)
         return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.slug})
 
 class MangaDeleteView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, DeleteView):
+    """
+    Vista para eliminar un Manga.
+    
+    Protegida por OwnerOrAdminRequiredMixin.
+    """
     model = Manga
     template_name = 'catalogo/manga_confirm_delete.html'
     slug_field = 'slug'
@@ -202,6 +216,11 @@ class MangaDeleteView(LoginRequiredMixin, OwnerOrAdminRequiredMixin, DeleteView)
 # --- CAPÍTULO DELETE ---
 
 class ChapterDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    Vista para eliminar un Capítulo específico.
+    
+    Verifica que el usuario sea dueño del Manga padre o admin.
+    """
     model = Chapter
     template_name = 'catalogo/chapter_confirm_delete.html'
     
@@ -217,11 +236,14 @@ class ChapterDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.manga.slug})
 
 
-
 @login_required
 def chapter_edit_upload(request, manga_slug, chapter_slug):
     """
-    Permite editar los datos de un capítulo y agregarle más páginas.
+    Vista híbrida para editar un capítulo existente.
+    
+    Funcionalidad dual:
+    1. POST (Dropzone): Permite agregar nuevas páginas (imágenes/PDF) al final del capítulo existente.
+    2. POST (Formulario): Permite editar los metadatos del capítulo (título, número, arco).
     """
     manga = get_object_or_404(Manga, slug=manga_slug)
     chapter = get_object_or_404(Chapter, manga=manga, slug=chapter_slug)
@@ -259,9 +281,13 @@ def chapter_edit_upload(request, manga_slug, chapter_slug):
         'manga': manga,
         'chapter': chapter
     })
+
 # --- ARCO CRUD ---
 
 class ArcUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    Vista para editar un Arco narrativo.
+    """
     model = Arc
     fields = ['title', 'order']
     template_name = 'catalogo/arc_form_modal.html'
@@ -275,6 +301,9 @@ class ArcUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return reverse('catalogo:manga-detail', kwargs={'manga_slug': self.object.manga.slug})
 
 class ArcDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    Vista para eliminar un Arco narrativo.
+    """
     model = Arc
     template_name = 'catalogo/arc_confirm_delete.html'
 
@@ -292,6 +321,13 @@ class ArcDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 @login_required
 def chapter_create_upload(request, manga_slug):
+    """
+    Vista híbrida para crear un nuevo capítulo.
+    
+    Maneja dos tipos de solicitudes POST:
+    1. AJAX (Dropzone): Recibe archivos (imágenes o PDF) y los procesa en segundo plano.
+    2. Standard Form: Crea la instancia del Capítulo con sus metadatos.
+    """
     manga = get_object_or_404(Manga, slug=manga_slug)
     
     if request.user != manga.owner and not request.user.is_superuser:
@@ -334,6 +370,11 @@ def chapter_create_upload(request, manga_slug):
 
 @login_required
 def arc_create_view(request, manga_slug):
+    """
+    Vista rápida para crear Arcos desde un Modal.
+    
+    Redirige siempre a la página de referencia (HTTP_REFERER) para mantener el flujo.
+    """
     manga = get_object_or_404(Manga, slug=manga_slug)
     if request.user != manga.owner and not request.user.is_superuser:
         return redirect('catalogo:manga-detail', manga_slug=manga.slug)
@@ -346,3 +387,61 @@ def arc_create_view(request, manga_slug):
             messages.success(request, f"Arco '{title}' creado.")
     
     return redirect(request.META.get('HTTP_REFERER') or reverse('catalogo:manga-detail', args=[manga.slug]))
+
+# En catalogo/views.py
+
+@login_required
+@require_POST
+def panel_delete(request, panel_id):
+    """
+    Elimina una página (panel) individual de un capítulo.
+    """
+    panel = get_object_or_404(Panel, id=panel_id)
+    chapter = panel.chapter
+    
+    # Seguridad: Solo el dueño del manga o admin puede borrar
+    if request.user != chapter.manga.owner and not request.user.is_superuser:
+        messages.error(request, "No tienes permiso.")
+        return redirect('catalogo:chapter-detail', manga_slug=chapter.manga.slug, chapter_slug=chapter.slug)
+
+    # Borramos el panel
+    panel.delete()
+    
+    # Opcional: Reordenar las páginas restantes (Script simple)
+    # Esto evita huecos en la numeración (1, 3, 4...)
+    for index, p in enumerate(chapter.panels.all().order_by('page_number'), start=1):
+        p.page_number = index
+        p.save()
+
+    messages.success(request, "Página eliminada y numeración reordenada.")
+    
+    # Volvemos a la misma página de edición
+    return redirect('catalogo:chapter-edit', manga_slug=chapter.manga.slug, chapter_slug=chapter.slug)
+
+@login_required
+@require_POST
+def reorder_panels(request):
+    """
+    Recibe una lista de IDs de paneles en el nuevo orden y actualiza sus page_number.
+    """
+    try:
+        data = json.loads(request.body)
+        panel_ids = data.get('panel_ids', [])
+        
+        if not panel_ids:
+            return JsonResponse({'status': 'error', 'message': 'Lista vacía'}, status=400)
+
+        # Verificación de seguridad rápida (tomamos el primer panel para chequear dueño)
+        first_panel = Panel.objects.get(id=panel_ids[0])
+        if request.user != first_panel.chapter.manga.owner and not request.user.is_superuser:
+            return JsonResponse({'status': 'error', 'message': 'Sin permisos'}, status=403)
+
+        # Actualización masiva del orden
+        # Iteramos la lista que nos mandó el frontend (que ya viene ordenada)
+        for index, panel_id in enumerate(panel_ids, start=1):
+            Panel.objects.filter(id=panel_id).update(page_number=index)
+            
+        return JsonResponse({'status': 'success'})
+        
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

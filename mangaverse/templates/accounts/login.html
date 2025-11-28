@@ -12,8 +12,8 @@
       <div class="position-absolute top-0 start-50 translate-middle-x border-top border-white border-opacity-25 w-50" style="margin-top: 1px; box-shadow: 0 0 15px rgba(255,255,255,0.1);"></div>
 
       <div class="text-center mb-5">
-        <a href="{% url 'catalogo:home' %}" class="d-inline-block text-decoration-none transition-transform hover-scale mb-3">
-          <img src="{% static 'images/sinfondo.png' %}" alt="MangaVerse" width="90" class="drop-shadow-logo">
+        <a href="{% url 'catalogo:home' %}" class="d-inline-block text-decoration-none">
+          <img src="{% static 'images/sinfondo.png' %}" alt="MangaVerse" width="90" class="logo-power-on hover-scale">
         </a>
         <h1 class="h3 text-white fw-bold mb-1 text-uppercase ls-1" style="font-family: 'Rajdhani', sans-serif;">
           Bienvenido a <span class="text-gradient-cyan">Bordo</span>
@@ -65,30 +65,67 @@
 </div>
 
 <style>
-  /* Animación de entrada */
+  /* Animación de entrada de la tarjeta */
   .animate-fade-in { animation: fadeIn 0.8s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* La Isla: Fondo sólido oscuro para legibilidad, bordes suaves */
-  .login-island {
-    background-color: rgba(18, 18, 18, 0.95); /* Semitransparente */
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px); /* Efecto Glass */
+  /* --- ANIMACIÓN DEL LOGO (POWER ON) --- */
+  .logo-power-on {
+    animation: powerOn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards, neonPulse 3s infinite 1.2s;
+    opacity: 0; /* Comienza invisible antes de animar */
   }
 
-  /* Inputs del form */
+  /* 1. Entrada espectacular */
+  @keyframes powerOn {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) translateY(20px);
+      filter: brightness(0) blur(10px);
+    }
+    50% {
+      opacity: 1;
+      filter: brightness(2) blur(0px); /* Destello de luz */
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: brightness(1);
+    }
+  }
+
+  /* 2. Latido Neón continuo */
+  @keyframes neonPulse {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(124, 77, 255, 0.3)); }
+    50% { filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.6)); }
+  }
+
+  /* Interacción Hover */
+  .hover-scale:hover { 
+    transform: scale(1.1) rotate(3deg); 
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  }
+
+  /* --- ESTILOS GENERALES --- */
+
+  .login-island {
+    background-color: rgba(25, 25, 30, 0.95); 
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.9),
+      0 0 30px rgba(124, 77, 255, 0.15);
+    backdrop-filter: blur(10px);
+  }
+
   .form-control {
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important; 
+    background-color: rgba(0, 0, 0, 0.3) !important;
     color: #e0e0e0 !important;
     padding: 0.8rem 1rem;
     border-radius: 12px;
     transition: all 0.3s ease;
   }
   
-  /* Efecto Glow al hacer foco */
   .form-control:focus {
     background-color: rgba(255, 255, 255, 0.05) !important;
     border-color: #7c4dff !important;
@@ -96,7 +133,6 @@
     outline: none;
   }
 
-  /* TRUCO CSS: Arreglar el fondo amarillo/blanco del autocompletado de Chrome */
   input:-webkit-autofill,
   input:-webkit-autofill:hover, 
   input:-webkit-autofill:focus, 
@@ -106,7 +142,6 @@
       transition: background-color 5000s ease-in-out 0s;
   }
 
-  /* Utilidades */
   .text-gradient-cyan {
     background: linear-gradient(to right, #00e5ff, #7c4dff);
     -webkit-background-clip: text;
@@ -114,8 +149,6 @@
     color: transparent;
   }
   
-  .drop-shadow-logo { filter: drop-shadow(0 0 15px rgba(124, 77, 255, 0.4)); }
-  .hover-scale:hover { transform: scale(1.05); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .hover-underline:hover { text-decoration: underline !important; }
   
   .btn-brand-neon {

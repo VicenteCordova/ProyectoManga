@@ -4,6 +4,13 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class Profile(models.Model):
+    """
+    Modelo que extiende la información del usuario estándar de Django.
+
+    Actúa como una extensión del modelo User (OneToOne), permitiendo almacenar
+    información adicional específica para la aplicación, como el avatar,
+    una biografía corta y la lista de mangas favoritos.
+    """
     # Relación 1 a 1 con el Usuario estándar de Django
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     
@@ -16,17 +23,30 @@ class Profile(models.Model):
     favorites = models.ManyToManyField('catalogo.Manga', related_name='favorited_by', blank=True)
 
     def __str__(self):
+        """Retorna la representación en cadena del perfil, indicando a qué usuario pertenece."""
         return f'Perfil de {self.user.username}'
 
-# --- SEÑALES MÁGICAS ---
-# Esto asegura que si creas un usuario desde el Admin o Registro, 
-# se cree su Profile automáticamente.
+# --- SEÑALES (SIGNALS) PARA AUTOMATIZACIÓN ---
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Signal que se ejecuta automáticamente después de que se guarda una instancia de User.
+
+    Si el usuario ha sido creado recién (created=True), crea inmediatamente
+    una instancia de Profile asociada a dicho usuario. Esto asegura que
+    todo usuario registrado tenga un perfil listo para usar.
+    """
     if created:
         Profile.objects.create(user=instance)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
+    """
+    Signal que se ejecuta al guardar una instancia de User.
+
+    Asegura que cualquier cambio que requiera guardar el perfil asociado
+    se propague correctamente. Mantiene la consistencia entre User y Profile.
+    """
     # Guarda el perfil cuando se guarda el usuario
     instance.profile.save()

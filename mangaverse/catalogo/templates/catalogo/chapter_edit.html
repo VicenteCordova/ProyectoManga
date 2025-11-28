@@ -5,66 +5,150 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+
 <style>
+    /* Estilos Dropzone Cyberpunk */
     .dropzone {
         border: 2px dashed var(--mv-primary);
         background: rgba(0,0,0,0.2);
         color: white;
         border-radius: 10px;
         min-height: 200px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+    .dropzone:hover { background: rgba(124, 77, 255, 0.1); border-color: #fff; }
     .dropzone .dz-preview .dz-image { border-radius: 10px; }
+    
+    /* Estilos Grilla Reordenable */
+    .panel-card {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: grab;
+        border: 1px solid rgba(255,255,255,0.1);
+        background-color: #202020;
+    }
+    .panel-card:active { cursor: grabbing; }
+    
+    /* Ratio para las tarjetas */
+    .ratio-2x3 { --bs-aspect-ratio: 150%; }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        border: 2px dashed #00e5ff;
+    }
+    
+    .panel-overlay {
+        position: absolute; inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.2s;
+        z-index: 10;
+    }
+    .panel-card:hover .panel-overlay { opacity: 1; }
+    
+    .page-badge {
+        position: absolute; top: 5px; left: 5px;
+        background: rgba(0,0,0,0.8); color: #00e5ff;
+        padding: 2px 6px; border-radius: 4px;
+        font-size: 0.75rem; font-weight: bold;
+        border: 1px solid #00e5ff; z-index: 5;
+        pointer-events: none;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             
             <div class="card bg-dark border-secondary shadow-lg">
                 <div class="card-body p-4">
+                    
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="h4 text-white mb-0">Editar Capítulo <span class="text-primary">#{{ chapter.chapter_number }}</span></h2>
+                        <div>
+                            <h2 class="h4 text-white mb-0">Editar Capítulo <span class="text-primary">#{{ chapter.chapter_number }}</span></h2>
+                            <p class="text-secondary small mb-0">Arrastra las imágenes para reordenarlas.</p>
+                        </div>
                         <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="btn btn-outline-light btn-sm">Volver</a>
                     </div>
 
-                    <form method="post" class="mb-5">
+                    <form method="post" class="mb-4 p-3 bg-black bg-opacity-25 rounded-3 border border-secondary border-opacity-10">
                         {% csrf_token %}
                         <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="text-secondary small">Título del Capítulo</label>
+                            <div class="col-md-6">
+                                <label class="text-secondary small fw-bold">Título</label>
                                 {{ form.title }}
                             </div>
-                            <div class="col-md-4">
-                                <label class="text-secondary small">Número</label>
+                            <div class="col-md-2">
+                                <label class="text-secondary small fw-bold">Número</label>
                                 {{ form.chapter_number }}
                             </div>
-                            <div class="col-12">
-                                <label class="text-secondary small">Arco</label>
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-bold">Arco</label>
                                 {{ form.arc }}
                             </div>
                         </div>
                         <div class="d-grid mt-3">
-                            <button type="submit" class="btn btn-brand-neon fw-bold">💾 Guardar Cambios de Texto</button>
+                            <button type="submit" class="btn btn-brand-neon btn-sm fw-bold">💾 Guardar Cambios de Texto</button>
                         </div>
                     </form>
 
-                    <hr class="border-secondary opacity-25">
+                    <hr class="border-secondary opacity-25 my-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 mt-5 border-bottom border-white border-opacity-10 pb-2">
+                        <h5 class="text-white mb-0 fw-bold border-start border-4 border-info ps-3">Páginas ({{ chapter.panels.count }})</h5>
+                        <span id="save-status" class="badge bg-success opacity-0 transition-opacity">orden guardado ✓</span>
+                    </div>
+                    
+                    {% if chapter.panels.all %}
+                        <div id="panel-grid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 mb-5">
+                            {% for panel in chapter.panels.all|dictsort:"page_number" %}
+                                <div class="col panel-item" data-id="{{ panel.id }}">
+                                    <div class="panel-card">
+                                        <div class="page-badge">#<span class="badge-num">{{ forloop.counter }}</span></div>
+                                        
+                                        <div class="ratio ratio-2x3">
+                                            {% if panel.image %}
+                                                <img src="{{ panel.image.url }}" class="object-fit-cover w-100 h-100" loading="lazy" alt="Página {{ panel.page_number }}">
+                                            {% else %}
+                                                <div class="d-flex align-items-center justify-content-center text-white-50 bg-secondary h-100">Sin img</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="panel-overlay">
+                                            <form action="{% url 'catalogo:panel-delete' panel.id %}" method="post" class="delete-panel-form">
+                                                {% csrf_token %}
+                                                <button type="button" class="btn btn-danger btn-sm rounded-circle shadow-sm btn-delete-trigger" title="Eliminar">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 border border-dashed border-secondary border-opacity-25 rounded-3 mb-4">
+                            <p class="text-white-50 mb-0">No hay páginas cargadas en este capítulo.</p>
+                        </div>
+                    {% endif %}
+
+                    <hr class="border-secondary opacity-25 my-4">
 
                     <div class="mt-4">
-                        <h5 class="text-white mb-3">Agregar Páginas Adicionales</h5>
-                        <p class="text-white-50 small">
-                            Sube más imágenes o PDFs para agregarlos <strong>al final</strong> de las páginas existentes.
-                        </p>
-                        
+                        <h5 class="text-white mb-3 fw-bold border-start border-4 border-primary ps-3">Agregar Nuevas Páginas</h5>
                         <form action="{{ request.path }}" class="dropzone" id="my-dropzone">
                             {% csrf_token %}
                         </form>
-
                         <div class="d-grid mt-4">
-                            <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="btn btn-success fw-bold">
-                                Finalizar y Ver Capítulo
+                            <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="btn btn-success fw-bold shadow-neon">
+                                Finalizar y Ver Capítulo Completo
                             </a>
                         </div>
                     </div>
@@ -75,23 +159,126 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border-secondary shadow-lg">
+      <div class="modal-body text-center p-4">
+        <div class="mb-3 text-danger display-4">
+            ⚠️
+        </div>
+        <h5 class="text-white fw-bold mb-2">¿Eliminar esta página?</h5>
+        <p class="text-secondary small mb-4">
+            Esta acción no se puede deshacer. Las páginas restantes se reordenarán automáticamente.
+        </p>
+        <div class="d-flex gap-2 justify-content-center">
+            <button type="button" class="btn btn-outline-light px-4" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" id="confirmDeleteBtn" class="btn btn-danger px-4 fw-bold">Sí, Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
-<script>
-    Dropzone.autoDiscover = false;
 
+<script>
+    // --- 1. LÓGICA DE MODAL DE BORRADO ---
+    let formToDelete = null;
+    
+    // Capturamos todos los botones de borrar
+    const deleteButtons = document.querySelectorAll('.btn-delete-trigger');
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Guardamos el formulario asociado al botón clickeado
+            formToDelete = this.closest('form');
+            // Mostramos el modal
+            deleteModal.show();
+        });
+    });
+
+    // Al confirmar en el modal, enviamos el formulario
+    confirmBtn.addEventListener('click', function() {
+        if (formToDelete) {
+            formToDelete.submit();
+        }
+    });
+
+    // --- 2. REORDENAMIENTO (DRAG & DROP) ---
+    const grid = document.getElementById('panel-grid');
+    const statusBadge = document.getElementById('save-status');
+
+    if (grid) {
+        new Sortable(grid, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            onEnd: function (evt) {
+                updatePageNumbers();
+                const items = grid.querySelectorAll('.panel-item');
+                const orderedIds = Array.from(items).map(item => item.getAttribute('data-id'));
+                saveNewOrder(orderedIds);
+            }
+        });
+    }
+
+    function updatePageNumbers() {
+        const badges = document.querySelectorAll('.badge-num');
+        badges.forEach((badge, index) => {
+            badge.textContent = index + 1;
+        });
+    }
+
+    function saveNewOrder(ids) {
+        statusBadge.style.opacity = '0';
+        statusBadge.className = 'badge bg-warning text-dark';
+        statusBadge.textContent = 'Guardando...';
+        statusBadge.style.opacity = '1';
+
+        fetch("{% url 'catalogo:reorder-panels' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ panel_ids: ids })
+        })
+        .then(response => {
+            if (response.ok) {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'Orden guardado ✓';
+                setTimeout(() => { statusBadge.style.opacity = '0'; }, 2000);
+            } else {
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.textContent = 'Error al guardar';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            statusBadge.className = 'badge bg-danger';
+            statusBadge.textContent = 'Error de red';
+        });
+    }
+
+    // --- 3. DROPZONE (SUBIDA) ---
+    Dropzone.autoDiscover = false;
     const myDropzone = new Dropzone("#my-dropzone", {
         autoProcessQueue: true,
         paramName: "file",
         maxFilesize: 50,
         acceptedFiles: "image/*,application/pdf",
         parallelUploads: 5,
-        dictDefaultMessage: "Arrastra nuevas páginas aquí para agregarlas",
+        dictDefaultMessage: "<div class='text-secondary'><i class='bi bi-cloud-plus fs-1'></i><br>Arrastra nuevas páginas aquí</div>",
     });
     
-    // Recargar página al terminar la cola para ver cambios (opcional)
-    // myDropzone.on("queuecomplete", function() { location.reload(); });
+    myDropzone.on("queuecomplete", function() { 
+        setTimeout(() => { location.reload(); }, 1000);
+    });
 </script>
 {% endblock %}
