@@ -23,6 +23,8 @@ urlpatterns = [
     path('mangas/<slug:manga_slug>/capitulo/<slug:chapter_slug>/eliminar/', 
          views.ChapterDeleteView.as_view(), 
          name='chapter-delete'),
+    path('mangas/<slug:manga_slug>/capitulo/<slug:chapter_slug>/editar/', views.chapter_edit_upload, 
+         name='chapter-edit'),
 
     # --- GESTIÓN DE ARCOS (Nuevas Rutas) ---
     path('mangas/<slug:manga_slug>/nuevo-arco/', views.arc_create_view, name='arc-create'),

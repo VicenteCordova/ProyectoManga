@@ -27,14 +27,13 @@
 }
 
 /* APLICACIÓN GLOBAL */
-body {
-  /* CORRECCIÓN CRÍTICA: Transparente para ver el fondo animado */
-  background-color: transparent; 
+html, body {
+  height: 100%;
+  /* CRÍTICO: Transparente para dejar ver el fondo fijo detrás */
+  background-color: transparent !important;
   color: var(--mv-text-high);
-  font-family: 'Inter', system-ui, sans-serif; /* Tipografía limpia */
+  font-family: 'Inter', system-ui, sans-serif;
 }
-
-html, body { height:100%; }
 
 body {
   min-height: 100vh;
@@ -259,4 +258,23 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .mv-card { transition: none; }
   .mv-card:hover { transform: none; }
+}
+
+/* Botón Principal Brillante (Neon) */
+.btn-brand-neon {
+  background: linear-gradient(135deg, #00e5ff 0%, #7c4dff 100%);
+  border: none;
+  color: #000 !important; /* Texto negro para máximo contraste */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); /* Brillo Cian */
+  transition: all 0.3s ease;
+}
+
+.btn-brand-neon:hover {
+  background: linear-gradient(135deg, #7c4dff 0%, #00e5ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(124, 77, 255, 0.6); /* Brillo Morado al pasar mouse */
+  color: #000 !important;
 }

@@ -1,82 +1,138 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Crear Cuenta | MangaVerse{% endblock %}
+{% block title %}Registro | MangaVerse{% endblock %}
 
 {% block content %}
 <div class="d-flex min-vh-100 align-items-center justify-content-center py-5">
+
   <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
     
-    <div class="login-island p-4 p-md-5 position-relative">
-      <div class="position-absolute top-0 start-50 translate-middle-x border-top border-white border-opacity-25 w-50" style="margin-top: 1px;"></div>
+    <div class="login-island p-4 p-md-5 position-relative overflow-hidden animate-fade-in">
+      
+      <div class="position-absolute top-0 start-50 translate-middle-x border-top border-white border-opacity-25 w-50" style="margin-top: 1px; box-shadow: 0 0 15px rgba(255,255,255,0.1);"></div>
 
-      <div class="text-center mb-4">
-        <h1 class="h3 text-white fw-bold text-uppercase ls-1">Únete a la Flota</h1>
+      <div class="text-center mb-5">
+        <h1 class="h3 text-white fw-bold mb-1 text-uppercase ls-1" style="font-family: 'Rajdhani', sans-serif;">
+          Únete a la <span class="text-gradient-cyan">Flota</span>
+        </h1>
         <p class="text-secondary small">Comienza tu colección hoy mismo.</p>
       </div>
 
       <form method="post" novalidate>
         {% csrf_token %}
-        
+
         {% if form.non_field_errors %}
-          <div class="alert alert-danger bg-danger bg-opacity-10 border-0 text-danger small mb-3 rounded-3">
-            {{ form.non_field_errors }}
+          <div class="alert alert-danger d-flex align-items-start border-0 bg-danger bg-opacity-10 text-danger mb-4 rounded-3 p-3 small">
+            <div class="me-2">⚠️</div>
+            <div>{{ form.non_field_errors.0 }}</div>
           </div>
         {% endif %}
 
         {% for field in form %}
-          <div class="mb-3">
+          <div class="mb-4">
             <label class="form-label text-uppercase text-secondary fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">
               {{ field.label }}
             </label>
+            
             <div class="input-group">
               {{ field }}
             </div>
+
             {% if field.errors %}
-              <div class="text-danger small mt-1 ps-1">{{ field.errors.0 }}</div>
+              <div class="text-danger small mt-1 ps-1">
+                <i class="bi bi-exclamation-circle me-1"></i> {{ field.errors.0 }}
+              </div>
             {% endif %}
+
             {% if field.help_text %}
-              <div class="text-white-50 small mt-1 ps-1" style="font-size: 0.75rem;">{{ field.help_text }}</div>
+              <div class="form-text text-white-50 opacity-50 small mt-1 ps-1" style="font-size: 0.75rem; line-height: 1.4;">
+                {{ field.help_text|safe }}
+              </div>
             {% endif %}
           </div>
         {% endfor %}
 
-        <div class="d-grid mt-4">
-          <button type="submit" class="btn btn-brand-neon btn-lg fw-bold text-dark shadow-neon active-scale">
-            Registrarse
+        <div class="d-grid mt-5">
+          <button type="submit" class="btn btn-brand-neon btn-lg fw-bold shadow-neon transition-transform active-scale">
+            REGISTRARSE
           </button>
         </div>
       </form>
 
-      <div class="text-center mt-4 pt-3 border-top border-white border-opacity-10">
+      <div class="text-center mt-5 pt-4 border-top border-white border-opacity-10">
         <span class="text-secondary small">¿Ya tienes cuenta?</span>
-        <a href="{% url 'accounts:login' %}" class="text-white fw-bold text-decoration-none ms-1 hover-underline">
+        <a href="{% url 'accounts:login' %}" class="fw-bold text-decoration-none ms-1 hover-underline text-gradient-cyan">
           Inicia Sesión
         </a>
       </div>
-    </div>
 
+    </div>
   </div>
 </div>
 
 <style>
-  /* Reutilizamos los estilos de la isla del Login */
+  /* Animación */
+  .animate-fade-in { animation: fadeIn 0.8s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* La Isla Glass */
   .login-island {
-    background-color: #121212;
-    border-radius: 20px;
+    background-color: rgba(18, 18, 18, 0.95);
+    border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
   }
-  /* Asegurar que los inputs del UserCreationForm se vean oscuros */
+
+  /* Estilos forzados para los Inputs de Django */
   input[type="text"], input[type="email"], input[type="password"] {
-    background-color: #1e1e1e !important;
+    display: block;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #e0e0e0 !important;
-    border-radius: 8px;
-    padding: 0.7rem;
+    padding: 0.8rem 1rem;
+    border-radius: 12px !important;
+    transition: all 0.3s ease;
   }
-  input:focus {
-    border-color: var(--mv-primary) !important;
+  
+  /* Focus Glow */
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: #7c4dff !important;
     box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.15) !important;
+    outline: none;
   }
+
+  /* Fix Autocompletado Chrome (Fondo amarillo feo) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active{
+      -webkit-box-shadow: 0 0 0 30px #151515 inset !important;
+      -webkit-text-fill-color: white !important;
+      transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* Gradientes y Botones */
+  .text-gradient-cyan {
+    background: linear-gradient(to right, #00e5ff, #7c4dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  
+  .btn-brand-neon {
+    background: linear-gradient(135deg, #00e5ff 0%, #7c4dff 100%);
+    border: none;
+    color: #000 !important;
+  }
+  .btn-brand-neon:hover {
+    background: linear-gradient(135deg, #7c4dff 0%, #00e5ff 100%);
+    box-shadow: 0 0 25px rgba(124, 77, 255, 0.6);
+  }
+  
+  .hover-underline:hover { text-decoration: underline !important; }
+  .active-scale:active { transform: scale(0.98); }
 </style>
 {% endblock %}

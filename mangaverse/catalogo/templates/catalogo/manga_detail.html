@@ -14,7 +14,8 @@
   <div class="row g-5">
     
     <div class="col-md-4 col-lg-3">
-      <div class="position-relative shadow-lg rounded-3 overflow-hidden border border-white border-opacity-10">
+      
+      <div class="position-relative shadow-lg rounded-3 overflow-hidden border border-white border-opacity-10 mb-4 card-hover-effect">
         {% if manga.portada %}
           <img src="{{ manga.portada.url }}" class="w-100 d-block">
         {% else %}
@@ -25,29 +26,51 @@
       </div>
       
       {% if user == manga.owner or user.is_superuser %}
-        <div class="d-grid gap-2 mt-3">
-          <a href="{% url 'catalogo:manga-update' manga.slug %}" class="btn btn-sm btn-outline-secondary">
-            ✏️ Editar Ficha
-          </a>
-          
-          <a href="{% url 'catalogo:chapter-create' manga.slug %}" class="btn btn-sm btn-brand-neon fw-bold">
-            + Subir Capítulo
-          </a>
+        <div class="card bg-dark border-secondary border-opacity-25 shadow-sm">
+          <div class="card-header bg-transparent border-secondary border-opacity-25 py-2">
+            <small class="text-uppercase text-secondary fw-bold ls-1" style="font-size: 0.7rem;">
+              ⚙️ Panel de Control
+            </small>
+          </div>
+          <div class="card-body p-3 d-grid gap-3">
+            
+            <a href="{% url 'catalogo:chapter-create' manga.slug %}" class="btn btn-brand-neon py-2">
+              <span class="fs-5 align-middle me-1">+</span> Subir Capítulo
+            </a>
 
-          <a href="{% url 'catalogo:manga-delete' manga.slug %}" class="btn btn-sm btn-outline-danger">
-            🗑️ Eliminar Manga
-          </a>
+            <div class="d-grid gap-2">
+              <a href="{% url 'catalogo:manga-update' manga.slug %}" class="btn btn-outline-secondary btn-sm text-start">
+                ✏️ Editar Ficha
+              </a>
+              <a href="{% url 'catalogo:manga-delete' manga.slug %}" class="btn btn-outline-danger btn-sm text-start">
+                🗑️ Eliminar Manga
+              </a>
+            </div>
+
+          </div>
         </div>
       {% endif %}
     </div>
 
     <div class="col-md-8 col-lg-9">
-      <h1 class="display-4 fw-bold text-white mb-1 text-uppercase" style="font-family: 'Rajdhani', sans-serif;">{{ manga.titulo }}</h1>
-      <p class="h5 text-secondary mb-4">Autor: <span class="text-white">{{ manga.autor }}</span></p>
+      
+      <header class="mb-5">
+        <h1 class="display-4 fw-bold text-white mb-2 text-uppercase text-shadow" style="font-family: 'Rajdhani', sans-serif;">{{ manga.titulo }}</h1>
+        
+        <div class="d-flex align-items-center gap-3 text-secondary mb-4 flex-wrap">
+          <span class="d-flex align-items-center gap-1">
+            <span class="text-white fw-bold">Autor:</span> {{ manga.autor }}
+          </span>
+          {% if manga.genero %}
+            <span class="text-white-50">|</span>
+            <span class="badge bg-secondary bg-opacity-10 border border-secondary border-opacity-50 text-light px-3 py-2">
+              {{ manga.get_genero_display }}
+            </span>
+          {% endif %}
+        </div>
 
-      <div class="mb-4">
         {% if user.is_authenticated %}
-          <button id="fav-btn" data-url="{% url 'accounts:add_favorite' manga.slug %}" class="btn btn-outline-light rounded-pill px-4 d-flex align-items-center gap-2">
+          <button id="fav-btn" data-url="{% url 'accounts:add_favorite' manga.slug %}" class="btn btn-outline-light rounded-pill px-4 d-flex align-items-center gap-2 transition-transform hover-scale">
             {% if manga in user.profile.favorites.all %}
               <span>❤️</span> <span>En Favoritos</span>
             {% else %}
@@ -55,21 +78,22 @@
             {% endif %}
           </button>
         {% endif %}
-      </div>
+      </header>
 
-      <div class="card bg-dark bg-opacity-50 border-0 rounded-4 p-4 mb-5">
-        <h6 class="text-uppercase text-secondary fw-bold ls-1 mb-2">Sinopsis</h6>
-        <p class="text-white-50 mb-0" style="line-height: 1.7;">
-          {{ manga.descripcion|default:"Sin descripción."|linebreaks }}
-        </p>
-      </div>
+      <section class="mb-5">
+        <h5 class="text-white fw-bold border-start border-4 border-primary ps-3 mb-3">Sinopsis</h5>
+        <div class="bg-dark bg-opacity-50 border border-white border-opacity-10 rounded-3 p-4">
+          <p class="text-white-50 mb-0" style="line-height: 1.8;">
+            {{ manga.descripcion|default:"Sin descripción disponible."|linebreaksbr }}
+          </p>
+        </div>
+      </section>
 
-      <div class="mb-5">
-        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2">
-          <h3 class="h5 text-white fw-bold mb-0">📚 Estructura (Arcos)</h3>
-          
+      <section class="mb-5">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="text-white fw-bold border-start border-4 border-info ps-3 mb-0">Estructura (Arcos)</h5>
           {% if user == manga.owner or user.is_superuser %}
-            <button class="btn btn-sm btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addArcModal">
+            <button class="btn btn-sm btn-outline-info rounded-pill hover-glow" data-bs-toggle="modal" data-bs-target="#addArcModal">
               + Nuevo Arco
             </button>
           {% endif %}
@@ -79,16 +103,16 @@
           <div class="row g-2">
             {% for arc in arcs %}
               <div class="col-12 col-md-6">
-                <div class="bg-dark bg-opacity-25 border border-secondary border-opacity-25 rounded-3 p-2 d-flex justify-content-between align-items-center">
-                  <div>
-                    <span class="badge bg-secondary me-2">#{{ arc.order }}</span>
-                    <span class="text-white small fw-medium">{{ arc.title }}</span>
+                <div class="bg-surface border border-secondary border-opacity-25 rounded-3 p-2 px-3 d-flex justify-content-between align-items-center transition-all hover-border-light">
+                  <div class="text-truncate me-2 d-flex align-items-center gap-2">
+                    <span class="badge bg-dark text-info border border-info border-opacity-25 font-monospace">#{{ arc.order }}</span>
+                    <span class="text-white small fw-bold text-truncate" title="{{ arc.title }}">{{ arc.title }}</span>
                   </div>
                   
                   {% if user == manga.owner or user.is_superuser %}
-                    <div class="btn-group">
-                      <a href="{% url 'catalogo:arc-update' arc.id %}" class="btn btn-xs btn-link text-secondary p-0 me-2" title="Editar">✏️</a>
-                      <a href="{% url 'catalogo:arc-delete' arc.id %}" class="btn btn-xs btn-link text-danger p-0" title="Eliminar">🗑️</a>
+                    <div class="flex-shrink-0 btn-group">
+                      <a href="{% url 'catalogo:arc-update' arc.id %}" class="btn btn-sm btn-icon-only text-secondary hover-text-white" title="Editar">✏️</a>
+                      <a href="{% url 'catalogo:arc-delete' arc.id %}" class="btn btn-sm btn-icon-only text-danger hover-text-danger" title="Eliminar">✕</a>
                     </div>
                   {% endif %}
                 </div>
@@ -96,51 +120,74 @@
             {% endfor %}
           </div>
         {% else %}
-          <p class="text-white-50 small fst-italic">Este manga no tiene arcos definidos.</p>
+          <div class="p-3 border border-dashed border-secondary border-opacity-25 rounded-3 text-center">
+            <p class="text-white-50 small mb-0 fst-italic">No hay arcos definidos. Crea uno para organizar los capítulos.</p>
+          </div>
         {% endif %}
-      </div>
+      </section>
 
-      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2">
-        <h3 class="h4 text-white mb-0">Capítulos</h3>
-        <span class="badge bg-secondary bg-opacity-25 text-secondary">{{ chapters.count }}</span>
-      </div>
-
-      {% if chapters %}
-        <div class="list-group rounded-3 overflow-hidden">
-          {% for chapter in chapters %}
-            <div class="list-group-item list-group-item-action bg-dark text-white border-secondary border-opacity-25 p-3 d-flex justify-content-between align-items-center">
-              
-              <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="text-decoration-none text-white d-flex align-items-center flex-grow-1">
-                <span class="fw-bold text-primary me-3">#{{ chapter.chapter_number }}</span>
-                <div>
-                  <span class="d-block">{{ chapter.title }}</span>
-                  <small class="text-secondary" style="font-size: 0.75rem;">
-                    {% if chapter.panels.count > 0 %}{{ chapter.panels.count }} págs{% else %}Sin páginas{% endif %} 
-                    • {{ chapter.created_at|date:"d M Y" }}
-                  </small>
-                </div>
-              </a>
-
-              {% if user == manga.owner or user.is_superuser %}
-                <div class="ms-3">
-                  <a href="{% url 'catalogo:chapter-delete' manga.slug chapter.slug %}" 
-                     class="btn btn-sm btn-outline-danger border-0 p-1" 
-                     title="Eliminar capítulo">
-                    🗑️
-                  </a>
-                </div>
-              {% else %}
-                 <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="text-secondary small text-decoration-none">Leer ➔</a>
-              {% endif %}
-
-            </div>
-          {% endfor %}
+      <section>
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-white border-opacity-10">
+          <h3 class="h4 text-white mb-0">Capítulos <span class="text-secondary fs-6 ms-2">({{ chapters.count }})</span></h3>
         </div>
-      {% else %}
-        <div class="text-center py-4 border border-secondary border-opacity-25 rounded-3 bg-dark bg-opacity-50">
-          <p class="text-white-50 mb-0">No hay capítulos aún.</p>
-        </div>
-      {% endif %}
+
+        {% if chapters %}
+          <div class="list-group rounded-3 overflow-hidden shadow-sm">
+            {% for chapter in chapters %}
+              <div class="list-group-item list-group-item-action bg-dark text-white border-secondary border-opacity-25 p-3 d-flex justify-content-between align-items-center group-hover transition-colors">
+                
+                <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="text-decoration-none text-white d-flex align-items-center flex-grow-1 overflow-hidden">
+                  
+                  <div class="me-3 text-center" style="min-width: 50px;">
+                    <span class="d-block text-secondary small text-uppercase" style="font-size: 0.6rem;">CAP</span>
+                    <span class="fs-4 fw-bold text-gradient-cyan">{{ chapter.chapter_number }}</span>
+                  </div>
+                  
+                  <div class="overflow-hidden border-start border-secondary border-opacity-25 ps-3">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <span class="fw-bold text-truncate">{{ chapter.title }}</span>
+                      {% if chapter.arc %}
+                        <span class="badge bg-dark border border-secondary text-secondary" style="font-size: 0.65rem;">
+                          {{ chapter.arc.title }}
+                        </span>
+                      {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-3 small text-secondary">
+                      <span><i class="bi bi-calendar"></i> {{ chapter.created_at|date:"d M, Y" }}</span>
+                      <span><i class="bi bi-file-earmark-image"></i> {% if chapter.panels.count > 0 %}{{ chapter.panels.count }} págs{% else %}Vacío{% endif %}</span>
+                    </div>
+                  </div>
+                </a>
+
+                <div class="d-flex align-items-center gap-2 ms-3">
+                  {% if user == manga.owner or user.is_superuser %}
+                    <a href="{% url 'catalogo:chapter-edit' manga.slug chapter.slug %}" 
+                       class="btn btn-icon-circle btn-outline-secondary" 
+                       title="Editar">
+                      ✏️
+                    </a>
+                    <a href="{% url 'catalogo:chapter-delete' manga.slug chapter.slug %}" 
+                       class="btn btn-icon-circle btn-outline-danger" 
+                       title="Eliminar">
+                      🗑️
+                    </a>
+                  {% else %}
+                     <a href="{% url 'catalogo:chapter-detail' manga.slug chapter.slug %}" class="btn btn-sm btn-secondary rounded-pill px-4 fw-bold hover-glow">Leer</a>
+                  {% endif %}
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-5 border border-dashed border-secondary border-opacity-25 rounded-3 bg-dark bg-opacity-25">
+            <div class="fs-1 mb-2 opacity-50">📭</div>
+            <p class="text-white-50 mb-0">Aún no se han subido capítulos para este manga.</p>
+          </div>
+        {% endif %}
+      </section>
+
     </div>
   </div>
 </div>
@@ -151,19 +198,50 @@
     <form action="{% url 'catalogo:arc-create' manga.slug %}" method="post" class="modal-content bg-dark border-secondary shadow-lg">
       {% csrf_token %}
       <div class="modal-header border-secondary border-opacity-25">
-        <h5 class="modal-title text-white fw-bold">Nuevo Arco</h5>
+        <h5 class="modal-title text-white fw-bold">Nuevo Arco Narrativo</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <input type="text" name="title" class="form-control bg-black text-white border-secondary" placeholder="Nombre del Arco (ej: Saga de Namek)" required>
+        <div class="form-floating mb-3">
+          <input type="text" name="title" class="form-control bg-black text-white border-secondary" id="arcTitleInput" placeholder="Nombre del Arco" required>
+          <label for="arcTitleInput" class="text-secondary">Nombre del Arco (Ej: Saga de Marineford)</label>
+        </div>
       </div>
       <div class="modal-footer border-secondary border-opacity-25">
-        <button type="submit" class="btn btn-brand-neon">Guardar</button>
+        <button type="button" class="btn btn-link text-white-50 text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-brand-neon fw-bold px-4">Guardar</button>
       </div>
     </form>
   </div>
 </div>
 {% endif %}
+
+<style>
+  .bg-surface { background-color: rgba(255, 255, 255, 0.03); }
+  .text-shadow { text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+  .hover-scale:hover { transform: scale(1.05); }
+  .text-gradient-cyan {
+    background: linear-gradient(to right, #00e5ff, #7c4dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hover-border-light:hover { border-color: rgba(255,255,255,0.3) !important; background-color: rgba(255,255,255,0.05); }
+  
+  .btn-icon-circle {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+  }
+  .btn-icon-circle:hover { background-color: rgba(255,255,255,0.1); color: white; border-color: white; }
+  .btn-icon-circle.btn-outline-danger:hover { background-color: var(--bs-danger); border-color: var(--bs-danger); }
+  
+  .btn-icon-only { padding: 0.2rem 0.5rem; }
+  .hover-text-white:hover { color: #fff !important; }
+  .hover-text-danger:hover { color: #ff4d4d !important; }
+</style>
 
 <script>
   const favBtn = document.getElementById('fav-btn');
