@@ -19,7 +19,7 @@
   {% block extra_head %}{% endblock %}
 </head>
 
-<body class="d-flex flex-column min-vh-100" style="padding-bottom: 100px;">
+<body class="d-flex flex-column min-vh-100" style="{% if not request.GET.mini %}padding-bottom: 100px;{% endif %}">
 
   <div class="bg-layer">
     <iframe class="bg-iframe" src="{% static 'fondo.html' %}" title="Fondo" loading="lazy"></iframe>
@@ -28,6 +28,7 @@
 
   <div class="page-wrap d-flex flex-column flex-fill">
     
+    {% if not request.GET.mini %}
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top mv-navbar">
       <div class="container">
         
@@ -62,6 +63,14 @@
 
           <ul class="navbar-nav gap-2 align-items-center mt-3 mt-lg-0">
             {% if user.is_authenticated %}
+              
+              <li class="nav-item me-2">
+                <a href="{% url 'accounts:inbox' %}" class="btn btn-icon-only position-relative text-secondary hover-text-white" title="Mensajes">
+                  <i class="bi bi-chat-square-text-fill fs-5"></i>
+                  <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-dark rounded-circle"></span>
+                </a>
+              </li>
+
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 user-pill ps-1 pe-3 py-1" href="#" data-bs-toggle="dropdown">
                   <div class="rounded-circle overflow-hidden border border-secondary" style="width: 28px; height: 28px;">
@@ -99,8 +108,9 @@
         </div>
       </div>
     </nav>
+    {% endif %}
 
-    <main class="flex-fill position-relative pt-nav fade-in-up">
+    <main class="flex-fill position-relative fade-in-up {% if not request.GET.mini %}pt-nav{% endif %}">
       {% if messages %}
         <div class="toast-container position-fixed top-0 end-0 p-3 mt-5 pt-4" style="z-index: 2000;">
           {% for message in messages %}
@@ -113,20 +123,22 @@
           {% endfor %}
         </div>
       {% endif %}
+      
       {% block content %}{% endblock %}
     </main>
 
+    {% if not request.GET.mini %}
     <footer class="mv-footer fixed-bottom border-top border-white border-opacity-10">
-      <div class="container py-3"> <div class="row align-items-center">
-          
+      <div class="container py-3">
+        <div class="row align-items-center">
           <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
             <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2">
               <img src="{% static 'images/sinfondo.png' %}" width="24" class="opacity-75 drop-shadow-sm">
-              <p class="mb-0 text-white-50" style="font-size: 0.85rem;"> © 2025 <span class="text-white fw-bold">MangaVerse</span>. Hecho por Guild CloudCode.
+              <p class="mb-0 text-white-50" style="font-size: 0.85rem;">
+                © 2025 <span class="text-white fw-bold">MangaVerse</span>. Hecho por Guild CloudCode.
               </p>
             </div>
           </div>
-
           <div class="col-md-6 text-center text-md-end">
             <div class="d-flex justify-content-center justify-content-md-end gap-3">
               <a href="#" class="social-link" title="GitHub"><i class="bi bi-github"></i></a>
@@ -134,12 +146,11 @@
               <a href="#" class="social-link" title="Twitter"><i class="bi bi-twitter-x"></i></a>
             </div>
           </div>
-
         </div>
       </div>
-      
-     
+      <div class="position-absolute bottom-0 start-50 translate-middle-x bg-primary opacity-10 rounded-circle blur-footer"></div>
     </footer>
+    {% endif %}
 
   </div>
 
@@ -201,22 +212,17 @@
     
     /* Footer Glass Fijo */
     .mv-footer {
-      background: rgba(10, 10, 12, 0.90); /* Oscuro pero con transparencia */
+      background: rgba(10, 10, 12, 0.90);
       backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
       z-index: 1040;
     }
     .blur-footer { width: 400px; height: 100px; filter: blur(80px); pointer-events: none; z-index: -1; }
     
-    /* Iconos Sociales */
-    .social-link {
-      color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: all 0.3s ease;
-    }
+    /* Componentes */
+    .social-link { color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: all 0.3s ease; }
     .social-link:hover { color: #00e5ff; transform: translateY(-2px); }
-
-    /* Espaciado */
     .pt-nav { margin-top: 68px; }
     
-    /* Componentes */
     .nav-link-custom { color: #a1a1aa !important; font-weight: 500; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; position: relative; padding: 0.5rem 0.8rem; transition: color 0.3s; }
     .nav-link-custom:hover, .nav-link-custom.active { color: white !important; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
     .nav-link-custom::after { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: #00e5ff; transition: all 0.3s ease; transform: translateX(-50%); }
@@ -233,10 +239,17 @@
     .dropdown-item:hover { background: rgba(255,255,255,0.1); color: white; }
     .hover-bg-danger:hover { background: #dc3545 !important; color: white !important; }
     
+    .btn-icon-only { border: none; background: transparent; padding: 0.5rem; line-height: 1; }
+    .hover-text-white:hover { color: white !important; }
+
     .hover-bg-dark:hover { background-color: #1a1a1a !important; }
     .transition-colors { transition: color 0.3s ease; }
     .drop-shadow-sm { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
   </style>
+
+  {% if user.is_authenticated and not request.GET.mini %}
+    {% include 'partials/chat_floating.html' %}
+  {% endif %}
 
   {% block extra_js %}{% endblock %}
 </body>

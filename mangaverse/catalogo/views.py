@@ -11,6 +11,8 @@ from .models import Manga, Chapter, Panel, Arc, GENEROS
 from .forms import MangaForm, ChapterForm
 from django.views.decorators.http import require_POST
 import json
+from django.contrib.auth import get_user_model
+
 
 # Importamos la utilidad de procesamiento de archivos
 try:
@@ -78,13 +80,30 @@ def search(request):
     """
     Realiza una búsqueda de mangas por título, descripción o autor.
     
-    También busca coincidencias en los títulos de los capítulos asociados.
-    Los resultados se paginan.
+    MEJORA SOCIAL:
+    Si la búsqueda comienza con '@' (ej: @vicente), busca un perfil de usuario
+    y redirige directamente a su página pública.
     """
     query = (request.GET.get('q') or '').strip()
     if not query: return redirect('catalogo:lista-mangas')
     
+    # --- 1. BÚSQUEDA DE PERFILES DE USUARIO ---
+    if query.startswith('@'):
+        username = query[1:] # Quitamos el arroba para obtener el nombre limpio
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        # Si el usuario existe, vamos a su perfil público
+        if User.objects.filter(username=username).exists():
+            return redirect('accounts:public_profile', username=username)
+        else:
+            # Si no existe, avisamos y mandamos al home (o podrías dejar que busque mangas con ese nombre)
+            messages.error(request, f"El usuario @{username} no fue encontrado.")
+            return redirect('catalogo:home')
+
+    # --- 2. BÚSQUEDA DE MANGAS (Lógica original) ---
     chapter_manga_ids = Chapter.objects.filter(Q(title__icontains=query)).values_list('manga_id', flat=True)
+    
     mangas_qs = Manga.objects.filter(
         Q(titulo__icontains=query) | 
         Q(descripcion__icontains=query) | 
@@ -94,7 +113,12 @@ def search(request):
     
     paginator = Paginator(mangas_qs, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
-    return render(request, 'catalogo/search_results.html', {'query': query, 'page_obj': page_obj, 'total': mangas_qs.count()})
+    
+    return render(request, 'catalogo/search_results.html', {
+        'query': query, 
+        'page_obj': page_obj, 
+        'total': mangas_qs.count()
+    })
 
 def search_suggest(request):
     """

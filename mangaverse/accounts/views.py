@@ -1,23 +1,38 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.http import JsonResponse
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.urls import reverse
 
-# --- IMPORTANTE: Importamos el modelo Manga para las estadísticas ---
+# Importamos modelos necesarios
 from catalogo.models import Manga
 from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
-from .models import Profile
+from .models import Profile, Message
+
+# Definimos la variable User para usarla en las consultas
+User = get_user_model()
+
+# ------------------------------------
+# HELPER DE VISTAS (SOLUCIÓN AL ERROR)
+# ------------------------------------
+
+def get_template_base(request):
+    """Selecciona la plantilla base (base.html o base_min.html) según el parámetro GET 'mini'."""
+    if request.GET.get('mini'):
+        return 'base_min.html'
+    return 'base.html'
+
+# --------------------------
+# VISTAS PRINCIPALES
+# --------------------------
 
 def register(request):
     """
-    Vista de registro de nuevos usuarios.
-    
-    Utiliza el RegisterForm personalizado. Si el registro es exitoso,
-    inicia sesión automáticamente y redirige al perfil del usuario.
-    En caso de error, muestra mensajes flash informativos.
+    Vista de registro de usuarios.
     """
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -34,64 +49,41 @@ def register(request):
 @login_required
 def profile(request):
     """
-    Vista principal del Perfil de Usuario (Dashboard).
-    
-    Esta vista cumple múltiples funciones:
-    1. Gestión de perfil: Permite editar datos de usuario y perfil (avatar, bio).
-    2. Centro de estadísticas: Calcula métricas de las obras subidas por el usuario para Chart.js.
-    3. Biblioteca: Muestra la lista de mangas favoritos.
-    4. Gestión de obras: Lista los mangas creados por el usuario para edición rápida.
+    Dashboard del usuario: Edición, Estadísticas y Biblioteca.
     """
-    # 1. Aseguramos que el usuario tenga un perfil creado en la BD
-    # Esto previene errores con usuarios antiguos o creados desde admin sin señal
     if not hasattr(request.user, 'profile'):
         Profile.objects.create(user=request.user)
 
-    # 2. Procesamiento del Formulario de Edición (POST)
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
         p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-        
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
             messages.success(request, '¡Tu perfil ha sido actualizado!')
             return redirect('accounts:profile')
     else:
-        # Carga inicial del formulario (GET) con datos existentes
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
-    # 3. DATOS PARA EL DASHBOARD (Lógica de Negocio)
-    
-    # A. Mis Favoritos: Recupera los mangas marcados como favoritos (Biblioteca de lectura)
+    # DATOS PARA EL DASHBOARD
     favoritos = request.user.profile.favorites.all()
-    
-    # B. Mis Creaciones: Recupera los mangas donde el usuario es el 'owner'.
-    # Usamos .annotate() para agregar campos calculados directamente desde la BD:
-    # - total_likes: Cuántos usuarios tienen este manga en favoritos.
-    # - total_caps: Cuántos capítulos tiene este manga.
     mis_mangas = Manga.objects.filter(owner=request.user).annotate(
         total_likes=Count('favorited_by'),
         total_caps=Count('chapters')
     )
-    
-    # C. Preparación de datos para Chart.js
-    # Convertimos los QuerySets en listas simples de Python para serializarlos
-    # fácilmente en el template como arrays de JavaScript.
     chart_labels = [m.titulo for m in mis_mangas]
     chart_likes = [m.total_likes for m in mis_mangas]
     chart_caps = [m.total_caps for m in mis_mangas]
 
-    # 4. Contexto para el template
     context = {
         'u_form': u_form,
         'p_form': p_form,
-        'favoritos': favoritos,       # Para la sección "Mi Biblioteca"
-        'mis_mangas': mis_mangas,     # Para la lista de gestión "Mis Creaciones"
-        'chart_labels': chart_labels, # Eje X del gráfico (Nombres)
-        'chart_likes': chart_likes,   # Dataset 1 (Likes)
-        'chart_caps': chart_caps,     # Dataset 2 (Capítulos)
+        'favoritos': favoritos,
+        'mis_mangas': mis_mangas,
+        'chart_labels': chart_labels,
+        'chart_likes': chart_likes,
+        'chart_caps': chart_caps,
     }
     return render(request, "accounts/profile.html", context)
 
@@ -99,21 +91,14 @@ def profile(request):
 @require_POST
 def add_favorite(request, manga_slug):
     """
-    Vista API (AJAX) para alternar el estado de favorito de un manga.
-    
-    Recibe una petición POST asíncrona desde el frontend.
-    Retorna:
-        JsonResponse: Con el nuevo estado ('liked': boolean) y el total actualizado.
+    Vista AJAX para dar like/fav a un manga.
     """
     manga = get_object_or_404(Manga, slug=manga_slug)
-    
-    # Verificación de seguridad por si el perfil no existe
     if not hasattr(request.user, 'profile'):
         Profile.objects.create(user=request.user)
 
     profile = request.user.profile
     
-    # Lógica de Toggle (Si existe lo quita, si no, lo agrega)
     if profile.favorites.filter(id=manga.id).exists():
         profile.favorites.remove(manga)
         liked = False
@@ -126,10 +111,141 @@ def add_favorite(request, manga_slug):
 @require_POST
 def logout_confirm(request):
     """
-    Vista de cierre de sesión seguro.
-    
-    Requiere método POST para evitar CSRF attacks o salidas accidentales por GET.
+    Cierre de sesión seguro.
     """
     logout(request)
     messages.success(request, "Sesión cerrada correctamente. ¡Hasta pronto!")
     return redirect("catalogo:home")
+
+# --------------------------
+# FUNCIONES SOCIALES
+# --------------------------
+
+@login_required
+@require_POST 
+def delete_chat(request, username):
+    """
+    Elimina todo el historial de mensajes con un usuario específico.
+    """
+    other_user = get_object_or_404(User, username=username)
+    
+    Message.objects.filter(
+        (Q(sender=request.user) & Q(recipient=other_user)) |
+        (Q(sender=other_user) & Q(recipient=request.user))
+    ).delete()
+    
+    messages.success(request, f"Chat con {username} eliminado.")
+    
+    # Redirigir respetando el modo mini
+    next_url = reverse('accounts:inbox')
+    if request.GET.get('mini'):
+        next_url += '?mini=true'
+        
+    return redirect(next_url)
+
+def public_profile(request, username):
+    """
+    Muestra el perfil público de otro usuario.
+    """
+    target_user = get_object_or_404(User, username=username)
+    
+    if request.user.is_authenticated and request.user == target_user:
+        return redirect('accounts:profile')
+        
+    mis_mangas = Manga.objects.filter(owner=target_user).annotate(
+        total_likes=Count('favorited_by'),
+        total_caps=Count('chapters')
+    )
+
+    is_following = False
+    if request.user.is_authenticated:
+        if not hasattr(request.user, 'profile'):
+            Profile.objects.create(user=request.user)
+        is_following = request.user.profile.following.filter(id=target_user.profile.id).exists()
+
+    context = {
+        'target_user': target_user,
+        'mis_mangas': mis_mangas,
+        'is_following': is_following,
+        'followers_count': target_user.profile.followers.count(),
+        'following_count': target_user.profile.following.count()
+    }
+    return render(request, 'accounts/public_profile.html', context)
+
+@login_required
+def follow_toggle(request, username):
+    """
+    Permite seguir o dejar de seguir a un usuario.
+    """
+    target_user = get_object_or_404(User, username=username)
+    
+    if request.user == target_user:
+        messages.error(request, "No puedes seguirte a ti mismo.")
+        return redirect('accounts:profile')
+
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.create(user=request.user)
+
+    my_profile = request.user.profile
+    target_profile = target_user.profile
+    
+    if my_profile.following.filter(id=target_profile.id).exists():
+        my_profile.following.remove(target_profile)
+        messages.info(request, f"Dejaste de seguir a {username}.")
+    else:
+        my_profile.following.add(target_profile)
+        messages.success(request, f"Ahora sigues a {username}.")
+        
+    return redirect('accounts:public_profile', username=username)
+
+@login_required
+@xframe_options_sameorigin
+def inbox(request):
+    """
+    Bandeja de entrada: Muestra lista de usuarios con chats activos.
+    """
+    chat_partners = User.objects.filter(
+        Q(received_messages__sender=request.user) | 
+        Q(sent_messages__recipient=request.user)
+    ).distinct().exclude(id=request.user.id)
+    
+    return render(request, 'accounts/inbox.html', {
+        'users': chat_partners,
+        'layout': get_template_base(request)
+    })
+
+@login_required
+@xframe_options_sameorigin
+def chat_detail(request, username):
+    """
+    Sala de chat privada con un usuario específico.
+    """
+    other_user = get_object_or_404(User, username=username)
+    
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            msg = Message.objects.create(sender=request.user, recipient=other_user, content=content)
+            
+            # Devolver JSON si es AJAX (para el envío fluido)
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'ok',
+                    'content': msg.content,
+                    'timestamp': msg.timestamp.strftime("%H:%M"),
+                    'sender': request.user.username
+                })
+            
+            return redirect('accounts:chat_detail', username=username)
+    
+    # Historial de mensajes
+    messages_list = Message.objects.filter(
+        (Q(sender=request.user) & Q(recipient=other_user)) |
+        (Q(sender=other_user) & Q(recipient=request.user))
+    ).order_by('timestamp')
+    
+    return render(request, 'accounts/chat.html', {
+        'other_user': other_user, 
+        'messages_list': messages_list,
+        'layout': get_template_base(request)
+    })

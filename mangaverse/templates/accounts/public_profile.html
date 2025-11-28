@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Perfil de {{ target_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 text-center">
+      
+      <div class="ratio ratio-1x1 rounded-circle overflow-hidden shadow-neon-box mx-auto mb-4" style="width: 120px; border: 3px solid #00e5ff;">
+        {% if target_user.profile.avatar %}
+          <img src="{{ target_user.profile.avatar.url }}" class="object-fit-cover">
+        {% else %}
+          <img src="{% static 'images/sinfondo.png' %}" class="p-3 bg-black">
+        {% endif %}
+      </div>
+
+      <h2 class="text-white fw-bold mb-1">{{ target_user.username }}</h2>
+      <p class="text-secondary mb-4">{{ target_user.profile.bio|default:"Sin descripción." }}</p>
+
+      <div class="d-flex justify-content-center gap-4 mb-4">
+        <div class="text-center">
+          <h5 class="text-white mb-0">{{ followers_count }}</h5>
+          <small class="text-secondary">Seguidores</small>
+        </div>
+        <div class="text-center">
+          <h5 class="text-white mb-0">{{ following_count }}</h5>
+          <small class="text-secondary">Siguiendo</small>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center gap-3">
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:follow_toggle' target_user.username %}" 
+             class="btn {% if is_following %}btn-outline-secondary{% else %}btn-brand-neon{% endif %} rounded-pill px-4">
+            {% if is_following %}Dejar de Seguir{% else %}Seguir{% endif %}
+          </a>
+          
+          <a href="{% url 'accounts:chat_detail' target_user.username %}" class="btn btn-outline-primary rounded-pill px-4">
+            💬 Mensaje
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+{% endblock %}

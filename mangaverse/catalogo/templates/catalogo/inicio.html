@@ -5,7 +5,9 @@
 
 {% block content %}
 
-{# ================= MODO USUARIO LOGUEADO (DASHBOARD) ================= #}
+{# ================================================================== #}
+{# MODO USUARIO LOGUEADO (DASHBOARD / FEED PERSONALIZADO)            #}
+{# ================================================================== #}
 {% if user.is_authenticated %}
 
   <div class="container py-5">
@@ -50,7 +52,11 @@
                   
                   <div class="card-body p-3 bg-surface border-top border-white border-opacity-5">
                     <h6 class="card-title text-white fw-bold text-truncate mb-1">{{ manga.titulo }}</h6>
-                    <p class="card-text text-white-50 small text-truncate mb-0">{{ manga.autor }}</p>
+                    <p class="card-text text-white-50 small text-truncate mb-0">
+                        <a href="{% url 'accounts:public_profile' manga.owner.username %}" class="text-decoration-none text-secondary hover-text-cyan" title="Ver perfil">
+                            @{{ manga.owner.username }}
+                        </a>
+                    </p>
                   </div>
                 </a>
               </div>
@@ -115,7 +121,9 @@
 
   </div>
 
-{# ================= MODO INVITADO (LANDING PAGE) ================= #}
+{# ================================================================== #}
+{# MODO INVITADO (LANDING PAGE / HERO SECTION)                       #}
+{# ================================================================== #}
 {% else %}
 
   <section class="d-flex flex-column align-items-center justify-content-center py-5 min-vh-75 position-relative text-center overflow-hidden">
@@ -183,7 +191,11 @@
                   {% endif %}
                   
                   <h6 class="card-title text-white fw-bold text-truncate mb-1">{{ manga.titulo }}</h6>
-                  <p class="card-text text-secondary small mb-0 text-truncate">{{ manga.autor }}</p>
+                  <p class="card-text text-secondary small mb-0 text-truncate">
+                      <a href="{% url 'accounts:public_profile' manga.owner.username %}" class="text-decoration-none text-secondary hover-text-cyan" title="Ver perfil">
+                          @{{ manga.owner.username }}
+                      </a>
+                  </p>
                 </div>
               </a>
             </div>
@@ -282,6 +294,9 @@
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     border-color: rgba(124, 77, 255, 0.3) !important;
   }
+  
+  /* Link a perfil hover */
+  .hover-text-cyan:hover { color: #00e5ff !important; text-decoration: underline !important; }
 </style>
 
 {% endblock %}

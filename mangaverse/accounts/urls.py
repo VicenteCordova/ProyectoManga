@@ -18,6 +18,19 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("profile/", views.profile, name="profile"),
     path("favoritos/<slug:manga_slug>/", views.add_favorite, name="add_favorite"),
+    # --- NUEVAS RUTAS SOCIALES ---
+    # Ver perfil público de otro usuario (ej: /accounts/u/vicente/)
+    path("u/<str:username>/", views.public_profile, name="public_profile"),
+    
+    # Seguir/Dejar de seguir
+    path("u/<str:username>/follow/", views.follow_toggle, name="follow_toggle"),
+    
+    # Mensajería
+    path("mensajes/", views.inbox, name="inbox"),
+    path("mensajes/<str:username>/", views.chat_detail, name="chat_detail"),
+    
+    path("favoritos/<slug:manga_slug>/", views.add_favorite, name="add_favorite"),
+    path("mensajes/<str:username>/eliminar/", views.delete_chat, name="delete_chat"),
 ]
 
 # --- BLOQUE MÁGICO PARA SERVIR IMÁGENES EN DESARROLLO ---

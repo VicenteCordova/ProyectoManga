@@ -1,0 +1,87 @@
+{% extends layout|default:"base.html" %}
+{% load static %}
+
+{% block title %}Mensajes{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0"> 
+  
+  {% if not request.GET.mini %}
+  <div class="container py-5">
+    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-white border-opacity-10 pb-3">
+      <h1 class="h3 text-white fw-bold mb-0 ls-1">
+        💬 Bandeja de <span class="text-gradient-cyan">Entrada</span>
+      </h1>
+    </div>
+  {% endif %}
+
+  <div class="p-3 border-bottom border-secondary border-opacity-25 bg-dark sticky-top" style="z-index: 10;">
+      <input type="text" id="contactFilter" 
+             class="form-control form-control-sm bg-black border-secondary text-white rounded-pill" 
+             placeholder="🔍 Buscar contacto...">
+  </div>
+
+
+  <div class="list-group list-group-flush bg-transparent" id="contactsList">
+    {% for user in users %}
+      <a href="{% url 'accounts:chat_detail' user.username %}{% if request.GET.mini %}?mini=true{% endif %}" 
+         class="list-group-item list-group-item-action bg-transparent border-bottom border-secondary border-opacity-25 text-white d-flex align-items-center gap-3 py-3 px-3 hover-bg-dark transition-colors contact-item"
+         data-username="{{ user.username|lower }}">
+        
+        <div class="position-relative">
+          <div class="rounded-circle overflow-hidden border border-secondary border-opacity-50" style="width: 45px; height: 45px;">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" class="w-100 h-100 object-fit-cover">
+            {% else %}
+              <img src="{% static 'images/sinfondo.png' %}" class="w-100 h-100 p-2 opacity-50 bg-black">
+            {% endif %}
+          </div>
+          <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style="width: 10px; height: 10px;"></span>
+        </div>
+
+        <div class="flex-grow-1 overflow-hidden lh-1">
+          <h6 class="mb-0 fw-bold text-white text-truncate" style="font-size: 0.9rem;">{{ user.username }}</h6>
+          <p class="text-secondary small mb-0 text-truncate opacity-75" style="font-size: 0.75rem;">
+            Abrir chat...
+          </p>
+        </div>
+      </a>
+    {% empty %}
+      <div class="text-center py-5 text-secondary">
+        <div class="mb-2"><i class="bi bi-chat-square-dots fs-1 opacity-50"></i></div>
+        <p class="small mb-0">No hay conversaciones activas.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if not request.GET.mini %}
+  </div> {% endif %}
+
+</div>
+
+<script>
+  // Lógica de filtrado local (instantáneo)
+  document.getElementById('contactFilter').addEventListener('keyup', function() {
+      const filter = this.value.toLowerCase();
+      const items = document.querySelectorAll('.contact-item');
+
+      items.forEach(item => {
+          const username = item.getAttribute('data-username');
+          if (username.includes(filter)) {
+              item.style.display = 'flex';
+          } else {
+              item.style.display = 'none';
+          }
+      });
+  });
+</script>
+
+<style>
+  .hover-bg-dark:hover { background-color: rgba(255,255,255,0.08) !important; }
+  .transition-colors { transition: background-color 0.2s ease; }
+  
+  /* Ajustes para scrollbar en modo mini */
+  #contactsList::-webkit-scrollbar { width: 4px; }
+  #contactsList::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+</style>
+{% endblock %}

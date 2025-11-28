@@ -1,0 +1,86 @@
+{% load static %}
+<div class="chat-widget-container position-fixed bottom-0 end-0 m-4" style="z-index: 9999;">
+  
+  <button class="btn btn-brand-neon rounded-circle shadow-neon-box p-0 d-flex align-items-center justify-content-center" 
+          id="chatToggleBtn" 
+          style="width: 60px; height: 60px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+    <i class="bi bi-chat-dots-fill fs-3 text-black"></i>
+  </button>
+
+  <div class="card chat-panel border-0 shadow-lg overflow-hidden mt-3" 
+       id="chatPanel"
+       style="width: 360px; height: 550px; display: none; border-radius: 20px; position: absolute; bottom: 80px; right: 0;">
+    
+    <div class="card-header border-bottom border-white border-opacity-10 py-3 px-3"
+         style="background: rgba(0,0,0,0.9);">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-white fw-bold ls-1 small"><i class="bi bi-chat-fill me-1 text-primary"></i> Mensajería</h6>
+        <button type="button" class="btn-close btn-close-white small" id="chatCloseBtn" aria-label="Close"></button>
+      </div>
+    </div>
+
+    <div class="card-body p-0 bg-black position-relative h-100">
+       <iframe src="{% url 'accounts:inbox' %}?mini=true" 
+               frameborder="0" 
+               width="100%" 
+               height="100%" 
+               id="chatIframe"
+               style="background-color: #09090b;"></iframe>
+    </div>
+    
+  </div>
+
+</div>
+
+<style>
+  .chat-panel {
+    background-color: rgba(18, 18, 20, 0.98);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: bottom right;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: scale(0.8) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .shadow-neon-box { box-shadow: 0 0 20px rgba(124, 77, 255, 0.5); }
+  .shadow-neon-box:hover { box-shadow: 0 0 30px rgba(0, 229, 255, 0.8); transform: scale(1.1); }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('chatToggleBtn');
+    const closeBtn = document.getElementById('chatCloseBtn');
+    const panel = document.getElementById('chatPanel');
+    const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
+    
+    if(toggleBtn && panel) {
+      toggleBtn.addEventListener('click', () => {
+        const isHidden = panel.style.display === 'none' || panel.style.display === '';
+        if (isHidden) {
+            panel.style.display = 'block';
+            toggleBtn.style.transform = 'rotate(90deg)';
+            if(icon) { 
+                icon.classList.replace('bi-chat-dots-fill', 'bi-x-lg');
+                icon.classList.remove('fs-3'); icon.classList.add('fs-4');
+            }
+        } else {
+            closeChat();
+        }
+      });
+
+      closeBtn.addEventListener('click', closeChat);
+      
+      function closeChat() {
+        panel.style.display = 'none';
+        toggleBtn.style.transform = 'rotate(0deg)';
+        if(icon) {
+            icon.classList.replace('bi-x-lg', 'bi-chat-dots-fill');
+            icon.classList.add('fs-3'); icon.classList.remove('fs-4');
+        }
+      }
+    }
+  });
+</script>

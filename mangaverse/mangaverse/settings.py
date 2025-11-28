@@ -160,4 +160,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Ponle 1000 o más, dependiendo de qué tan largos sean tus capítulos.
 DATA_UPLOAD_MAX_NUMBER_FILES = 100
 
+# CORRECCIÓN 1: Permite explícitamente cargar contenido de iframe desde el mismo dominio
+# Esto reemplaza el middleware de clickjacking.
+X_FRAME_OPTIONS = 'ALLOW-FROM http://127.0.0.1:8000/'
+# También podemos usar 'SAMEORIGIN' si ALLOW-FROM no funciona
 
+# CORRECCIÓN 2: Desactiva la protección moderna de "aislamiento" (Django 5+)
+# que puede interferir con iframes cargados localmente (localhost).
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None

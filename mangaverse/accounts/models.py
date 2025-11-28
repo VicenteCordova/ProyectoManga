@@ -21,6 +21,8 @@ class Profile(models.Model):
     # Sistema de Favoritos: Relación Muchos-a-Muchos con Manga
     # Usamos 'catalogo.Manga' como string para evitar errores de importación circular
     favorites = models.ManyToManyField('catalogo.Manga', related_name='favorited_by', blank=True)
+    # "symmetrical=False" significa que si yo te sigo, tú no me sigues automáticamente (como Instagram/Twitter)
+    following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
 
     def __str__(self):
         """Retorna la representación en cadena del perfil, indicando a qué usuario pertenece."""
@@ -50,3 +52,17 @@ def save_user_profile(sender, instance, **kwargs):
     """
     # Guarda el perfil cuando se guarda el usuario
     instance.profile.save()
+
+# --- NUEVO: MODELO DE MENSAJERÍA ---
+class Message(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='sent_messages', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='received_messages', on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"De {self.sender} para {self.recipient}"
