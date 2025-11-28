@@ -1,0 +1,505 @@
+[
+{
+    "model": "auth.user",
+    "fields": {
+        "password": "pbkdf2_sha256$1000000$AMoAnGghuUvdI4YQMdK77a$0nfbbyJLvnr6HJyS2LwXMIKQVdXCYJNVSoR4/ylm9M8=",
+        "last_login": "2025-11-28T06:21:52.749Z",
+        "is_superuser": true,
+        "username": "vicente",
+        "first_name": "Vicente",
+        "last_name": "Córdova",
+        "email": "vicente.cordova.p@gmail.com",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2025-10-25T14:51:10.892Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "fields": {
+        "password": "pbkdf2_sha256$1000000$NIohJ9DSclXWWifThSUrO7$207IvOt0tLZ4XdmVtjCLtd3TSMDI3qhvyo9n0+hWIfk=",
+        "last_login": "2025-10-26T00:04:54.808Z",
+        "is_superuser": false,
+        "username": "vcordova",
+        "first_name": "",
+        "last_name": "",
+        "email": "vicente.cordova.p@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-10-26T00:04:53.761Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "fields": {
+        "password": "pbkdf2_sha256$1000000$Sd241wRMnhZC37P3w2itPr$MxUodDnEm5imQprpoKgxOSLAkIzMjdp+XqJwX753iD8=",
+        "last_login": "2025-11-04T22:24:35.540Z",
+        "is_superuser": false,
+        "username": "pedro",
+        "first_name": "",
+        "last_name": "",
+        "email": "pedro@pedro.cl",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-11-04T22:24:33.336Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "fields": {
+        "password": "pbkdf2_sha256$1000000$olVrrPaDmOibHLc4fMDRUw$6xwRITqgWw1h/otBINb0qwQGOnr66W0HCU12YrC6JkA=",
+        "last_login": "2025-11-28T06:23:48.261Z",
+        "is_superuser": false,
+        "username": "Jolo",
+        "first_name": "Jose",
+        "last_name": "Gonzalez",
+        "email": "jolo@jolo.cl",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-11-28T04:20:49.234Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "fields": {
+        "password": "pbkdf2_sha256$1000000$RGlgEaTyLUYmKLidZVDt8S$+O2ygHllWtcMMKDDOzifRw1AQCfPIOQ0Lsr42yO0vgI=",
+        "last_login": "2025-11-28T06:26:59.514Z",
+        "is_superuser": false,
+        "username": "Peter",
+        "first_name": "Pedro",
+        "last_name": "Luengo",
+        "email": "pluengo@cftsa.cl",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2025-11-28T06:26:58.286Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "catalogo.manga",
+    "pk": 1,
+    "fields": {
+        "owner": [
+            "vicente"
+        ],
+        "titulo": "Fullmetal Alchemist",
+        "autor": "Hiromu Arakawa",
+        "genero": "shonen",
+        "descripcion": "Tras un fallido experimento de transmutación humana, los prodigiosos hermanos Edward y Alphonse Elric pierden partes de su cuerpo. Para enmendar su error, se embarcan en un viaje para encontrar la legendaria Piedra Filosofal, un artefacto con el poder de sortear la Ley de Intercambio Equivalente. Su travesía los sumergirá en una oscura conspiración militar que esconde los secretos más oscuros de la alquimia y una verdad más aterradora que cualquier pecado.",
+        "portada": "portadas/FMA_8gkB4U2.jpg",
+        "slug": "fullmetal-alchemist"
+    }
+},
+{
+    "model": "catalogo.manga",
+    "pk": 2,
+    "fields": {
+        "owner": [
+            "vicente"
+        ],
+        "titulo": "One Piece",
+        "autor": "Eiichirō Oda",
+        "genero": "shonen",
+        "descripcion": "Monkey D. Luffy, un joven con un poder especial que le da las habilidades de la goma, sueña con convertirse en el próximo Rey de los Piratas. Acompañado por una tripulación de compañeros con sueños propios —incluido el ambicioso espadachín Zoro, la astuta navegante Nami y el valiente francotirador Usopp—, se lanza a la aventura en los mares más peligrosos del mundo.",
+        "portada": "portadas/onepiece.png",
+        "slug": "one-piece"
+    }
+},
+{
+    "model": "catalogo.manga",
+    "pk": 3,
+    "fields": {
+        "owner": [
+            "vicente"
+        ],
+        "titulo": "Slam Dunk",
+        "autor": "Takehiko Inoue",
+        "genero": "shonen",
+        "descripcion": "Con 50 rechazos amorosos en su historial, el pandillero Hanamichi Sakuragi está harto del amor. O al menos eso es lo que cree, hasta que se cruza con la dulce Haruko Akagi. Para conquistarla, el imponente Sakuragi acepta unirse al equipo de baloncesto de Shohoku, sin saber nada del deporte. Allí, se encontrará con un rudo capitán, un rival natural (y el objeto de afecto de Haruko), Kaede Rukawa, y un grupo de compañeros con sueños de gloria. A medida que el camino se llena de desafíos, risas y rivalidades, Sakuragi debe dejar atrás su temperamento y su arrogancia para convertirse en un verdadero jugador de baloncesto, descubriendo el valor de la amistad, la disciplina y la superación personal en el camino hacia el campeonato nacional.",
+        "portada": "portadas/SlamDunk.jpg",
+        "slug": "slam-dunk"
+    }
+},
+{
+    "model": "catalogo.manga",
+    "pk": 9,
+    "fields": {
+        "owner": [
+            "vicente"
+        ],
+        "titulo": "Chainsaw Man",
+        "autor": "Tatsuki Fujimoto",
+        "genero": "shonen",
+        "descripcion": "UNA HISTORIA DE UN NIÑO Y SU PERRO",
+        "portada": "portadas/Dragon-Ball-portada_M0xDaY3.png",
+        "slug": "chainsaw-man"
+    }
+},
+{
+    "model": "catalogo.arc",
+    "pk": 2,
+    "fields": {
+        "manga": 1,
+        "title": "La Búsqueda de la Piedra Filosofal",
+        "order": 1
+    }
+},
+{
+    "model": "catalogo.chapter",
+    "pk": 6,
+    "fields": {
+        "manga": 1,
+        "arc": 2,
+        "title": "Dos hermanos",
+        "chapter_number": 1,
+        "slug": "1",
+        "created_at": "2025-11-27T17:15:15.088Z"
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 50,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_1BrnWAU.jpg",
+        "page_number": 1
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 111,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0006.jpg",
+        "page_number": 2
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 112,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0004.jpg",
+        "page_number": 3
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 113,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0002.jpg",
+        "page_number": 3
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 114,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0005.jpg",
+        "page_number": 4
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 115,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0003.jpg",
+        "page_number": 6
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 116,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0009.jpg",
+        "page_number": 7
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 117,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0010.jpg",
+        "page_number": 7
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 118,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0008.jpg",
+        "page_number": 7
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 119,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0007.jpg",
+        "page_number": 7
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 120,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0011.jpg",
+        "page_number": 11
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 121,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0016.jpg",
+        "page_number": 12
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 122,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0014.jpg",
+        "page_number": 12
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 123,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0015.jpg",
+        "page_number": 12
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 124,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0012.jpg",
+        "page_number": 12
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 125,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0013.jpg",
+        "page_number": 12
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 126,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0020.jpg",
+        "page_number": 17
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 127,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0019.jpg",
+        "page_number": 17
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 128,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0021.jpg",
+        "page_number": 17
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 129,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0018.jpg",
+        "page_number": 17
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 130,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0017.jpg",
+        "page_number": 17
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 131,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0023.jpg",
+        "page_number": 22
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 132,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0025.jpg",
+        "page_number": 22
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 133,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0024.jpg",
+        "page_number": 22
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 134,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0026.jpg",
+        "page_number": 22
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 135,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0022.jpg",
+        "page_number": 22
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 136,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0027.jpg",
+        "page_number": 27
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 137,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0029.jpg",
+        "page_number": 27
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 138,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0030.jpg",
+        "page_number": 27
+    }
+},
+{
+    "model": "catalogo.panel",
+    "pk": 139,
+    "fields": {
+        "chapter": 6,
+        "image": "manga_panels/fullmetal-alchemist/1/Fullmetal_Alchemist_Volume_01_-_PDF_Room_page-0028.jpg",
+        "page_number": 27
+    }
+},
+{
+    "model": "accounts.profile",
+    "pk": 1,
+    "fields": {
+        "user": [
+            "vicente"
+        ],
+        "avatar": "avatars/vicho.png",
+        "bio": "Don vicho",
+        "favorites": [
+            3
+        ]
+    }
+},
+{
+    "model": "accounts.profile",
+    "pk": 2,
+    "fields": {
+        "user": [
+            "vcordova"
+        ],
+        "avatar": "images/sinfondo.png",
+        "bio": "",
+        "favorites": []
+    }
+},
+{
+    "model": "accounts.profile",
+    "pk": 3,
+    "fields": {
+        "user": [
+            "pedro"
+        ],
+        "avatar": "images/sinfondo.png",
+        "bio": "",
+        "favorites": []
+    }
+},
+{
+    "model": "accounts.profile",
+    "pk": 4,
+    "fields": {
+        "user": [
+            "Jolo"
+        ],
+        "avatar": "avatars/jose.png",
+        "bio": "Don jolo",
+        "favorites": [
+            9,
+            2
+        ]
+    }
+},
+{
+    "model": "accounts.profile",
+    "pk": 5,
+    "fields": {
+        "user": [
+            "Peter"
+        ],
+        "avatar": "avatars/pedro.png",
+        "bio": "Don pedro",
+        "favorites": [
+            2
+        ]
+    }
+}
+]
