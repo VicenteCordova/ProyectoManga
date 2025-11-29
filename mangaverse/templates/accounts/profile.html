@@ -161,7 +161,8 @@
                       </div>
                     {% endif %}
                     
-                    <div class="position-absolute inset-0 bg-black bg-opacity-90 d-flex flex-column align-items-center justify-content-center gap-2 opacity-0 group-hover-opacity-100 transition-opacity backdrop-blur-sm">
+                    <!-- CAMBIO AQUÍ: inset-0 -> top-0 start-0 w-100 h-100 -->
+                    <div class="position-absolute top-0 start-0 w-100 h-100 bg-black bg-opacity-90 d-flex flex-column align-items-center justify-content-center gap-2 opacity-0 group-hover-opacity-100 transition-opacity backdrop-blur-sm">
                       <a href="{% url 'catalogo:chapter-create' manga.slug %}" class="btn btn-brand-neon btn-sm fw-bold w-75 scale-up">
                         + Capítulo
                       </a>

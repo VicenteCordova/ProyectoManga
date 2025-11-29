@@ -1,16 +1,21 @@
 {% extends layout|default:"base.html" %}
 {% load static %}
 
-{% block title %}Chat con {{ other_user.username }}{% endblock %}
+{% block title %}Chat{% endblock %}
 
 {% block content %}
 <div class="{% if not request.GET.mini %}container py-5{% else %}container-fluid px-3 pt-3 h-100{% endif %} d-flex flex-column">
 
-    <div class="{% if not request.GET.mini %}chat-card-full{% else %}h-100{% endif %} d-flex flex-column p-0">
+    <div class="
+        {% if not request.GET.mini %}
+            chat-card-full card bg-dark border-secondary shadow-lg mx-auto
+        {% else %}
+            h-100
+        {% endif %} 
+        d-flex flex-column p-0 position-relative overflow-hidden" 
+        style="width: 100%; max-width: {% if not request.GET.mini %}800px{% else %}100%{% endif %}; border-radius: 16px;">
         
-        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2 flex-shrink-0 pt-2" 
-             style="padding-bottom: 15px !important; padding-top: {% if not request.GET.mini %}20px{% else %}0{% endif %}; border-bottom-width: {% if not request.GET.mini %}0{% endif %} !important;">
-            
+        <div class="d-flex align-items-center justify-content-between border-bottom border-white border-opacity-10 pb-2 flex-shrink-0 pt-3 px-3" style="padding-bottom: 15px !important;">
             <div class="d-flex align-items-center gap-3">
                 <a href="{% url 'accounts:inbox' %}{% if request.GET.mini %}?mini=true{% endif %}" 
                    class="btn btn-icon-only text-secondary hover-text-white ps-0" title="Volver">
@@ -38,7 +43,8 @@
             </button>
         </div>
 
-        <div class="flex-grow-1 overflow-y-auto p-2" id="chat-box" style="padding-bottom: 70px !important;">
+        {# cuerpo del chat: ocupa todo el alto disponible #}
+        <div class="flex-grow-1 overflow-y-auto p-2" id="chat-box">
           {% for msg in messages_list %}
             <div class="d-flex mb-2 {% if msg.sender == user %}justify-content-end{% else %}justify-content-start{% endif %} animate-fade-in">
               <div class="px-3 py-2 rounded-3 shadow-sm text-break" 
@@ -61,21 +67,23 @@
           {% endfor %}
         </div>
 
-        <form id="chat-form" method="post" class="d-flex gap-2 flex-shrink-0 py-3 mt-auto border-top border-secondary border-opacity-25" 
-              style="padding-bottom: 0 !important; background: {% if not request.GET.mini %}#121212{% else %}transparent{% endif %};">
+        {# formulario: ahora es un ítem más del flex, siempre visible abajo #}
+        <form id="chat-form" method="post" class="py-2 bg-dark border-top border-secondary">
           {% csrf_token %}
-          <input type="text" name="content" id="msg-input" 
-                 class="form-control flex-grow-1 bg-dark text-white border-secondary rounded-pill shadow-none" 
-                 placeholder="Escribe aquí..." autocomplete="off" required style="font-size: 0.9rem;">
-          <button type="submit" class="btn btn-brand-neon rounded-circle d-flex align-items-center justify-content-center shadow-neon" 
-                  style="width: 40px; height: 40px;">
-            <i class="bi bi-send-fill small"></i>
-          </button>
+          <div class="d-flex gap-2 px-3">
+            <input type="text" name="content" id="msg-input" 
+                   class="form-control flex-grow-1 bg-dark text-white border-secondary rounded-pill shadow-none" 
+                   placeholder="Escribe aquí..." autocomplete="off" required style="font-size: 0.9rem;">
+            <button type="submit" class="btn btn-brand-neon rounded-circle d-flex align-items-center justify-content-center shadow-neon" 
+                    style="width: 40px; height: 40px;">
+              <i class="bi bi-send-fill small"></i>
+            </button>
+          </div>
         </form>
 
     </div>
     
-  </div>
+</div>
 
 <div class="modal fade" id="deleteChatModal" tabindex="-1" aria-hidden="true" style="z-index: 10000;">
   <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -160,6 +168,18 @@
 </script>
 
 <style>
+  /* Estilos para el modo flotante/mini */
+  
+  .chat-card-full {
+      width: 100%;
+      min-height: 80vh;
+      margin: 0 auto;
+      max-width: 800px;
+      border-radius: 16px;
+      padding: 0 !important;
+      background-color: #121212; /* Fondo de la tarjeta central */
+  }
+
   /* Scrollbar fina */
   #chat-box::-webkit-scrollbar { width: 5px; }
   #chat-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
@@ -168,15 +188,11 @@
 
   .animate-fade-in { animation: fadeIn 0.2s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { transform: translateY(0); } }
-
-  /* Estilo Específico para el modo Full Page */
-  .chat-card-full {
-      width: 100%;
-      min-height: 80vh;
-      margin: 0 auto;
-      max-width: 800px;
-      border-radius: 16px;
-      padding: 0 !important;
+  {% if request.GET.mini %}
+  html, body {
+      height: 100%;
+      overflow: hidden;
   }
+  {% endif %}
 </style>
 {% endblock %}
